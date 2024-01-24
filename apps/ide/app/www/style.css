@@ -1,0 +1,95 @@
+::-webkit-scrollbar {
+  width: 7px !important;
+  height: 7px !important;
+}
+      
+::-webkit-scrollbar-track {
+  background: #f1f1f1 !important; 
+}
+       
+::-webkit-scrollbar-thumb {
+  background: #888 !important; 
+}
+      
+::-webkit-scrollbar-thumb:hover {
+  background: #555 !important; 
+}
+      
+.split {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100%;
+}
+      
+.gutter {
+  background-color: rgb(246, 247, 249);
+  background-repeat: no-repeat;
+  background-position: 50%;      
+}
+      
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: col-resize;
+}
+
+.active-tab {
+  background-color: rgb(246, 247, 249) !important; 
+  color: black !important; 
+  font-weight: 900 !important; 
+  border-bottom: 1.5px solid black !important;
+}
+
+.active-menu {
+  background-color: #f2f2f2 !important; 
+  color: black !important; 
+  font-weight: bold !important; 
+  border-bottom: 1px solid black !important;
+}
+      
+.active-tab:hover {
+  background-color: rgb(246, 247, 249) !important; 
+  color: black !important; 
+  font-weight: 900 !important; 
+  border-bottom: 1.5px solid black !important;
+}
+
+.active-menu:hover {
+  background-color: #f2f2f2 !important; 
+  color: black !important; 
+  font-weight: bold !important; 
+  border-bottom: 1px solid black !important;
+}
+
+.r-src {
+  white-space: pre;
+  font-family: 'Consolas', monospace;
+  color: blue;
+} 
+      
+.r-message {
+  white-space: pre;
+  font-family: 'Consolas', monospace;
+  color: #3498db;
+  font-weight: bold;
+}
+
+.r-warning {
+  white-space: pre;
+  font-family: 'Consolas', monospace;
+  color: #E4A11B;
+  font-weight: bold;
+}
+       
+.r-error {
+  white-space: pre;
+  font-family: 'Consolas', monospace;
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.r-output {
+  white-space: pre;
+  font-family: 'Consolas', monospace;
+  color: black;
+}
