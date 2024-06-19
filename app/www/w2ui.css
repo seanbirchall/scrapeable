@@ -1,0 +1,55 @@
+.w2ui-scroll-wrapper{
+  height: 20px !important;
+}
+
+.w2ui-tabs-line {
+  display: none !important;
+}
+
+.w2ui-tabs{
+  height: 20px !important;
+  min-height: 20px !important;
+}
+
+.w2ui-tab{
+  font-size: 11px !important;
+}
+
+.w2ui-tab-close{
+  height: 20px !important;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper .w2ui-tab{
+  height: 20px !important;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper{
+  background-color: #eee !important;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper .w2ui-tab.active{
+    color: black !important;
+    background-color: rgb(246, 247, 249) !important;
+    border: 1px solid transparent !important;
+    border-bottom: 1px solid black !important;
+    margin-bottom: 0 !important;
+    font-weight: 900px;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper .w2ui-tab{
+  padding: 3px 28px 0px 20px !important;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper .w2ui-tab.closable{
+  padding: 3px 28px 0px 20px !important;
+}
+
+.w2ui-tabs .w2ui-scroll-wrapper .w2ui-tab .w2ui-tab-close{
+  padding: 0px 4px !important;
+  margin-top: -4px;
+}
+
+#tabs_tabs_tab_add{
+  width: 25px !important;
+}
+
