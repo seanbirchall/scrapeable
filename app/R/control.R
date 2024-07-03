@@ -1,4 +1,4 @@
-ui_controls <- function(id="controls"){
+ui_control <- function(id="control"){
   ns <- shiny::NS(id)
 
   shiny::tagList(
@@ -42,7 +42,7 @@ ui_controls <- function(id="controls"){
                   style = "display: flex; align-items: center; justify-content: flex-end;",
                   shiny::actionButton(
                     inputId = "deploy",
-                    label = "Deploy",
+                    label = "Cloud",
                     style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid #eee; background-color: #eee; color: black;",
                     icon = shiny::icon(
                       "cloud-arrow-up"
@@ -74,7 +74,7 @@ ui_controls <- function(id="controls"){
 
 }
 
-server_controls <- function(id="controls", ide){
+server_control <- function(id="control", ide){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -84,15 +84,14 @@ server_controls <- function(id="controls", ide){
       ide$tab_control <- "environment"
 
       # sub-modules ----
-      server_environment(
+      server_control_environment(
         id = "environment",
         ide = ide
       )
-      server_viewer(
+      server_control_viewer(
         id = "viewer",
         ide = ide
       )
-
 
       # observe control tabs ----
       shiny::observeEvent(input$tab_environment, {
@@ -102,54 +101,15 @@ server_controls <- function(id="controls", ide){
         ide$tab_control <- "viewer"
       })
 
-      # observe code ----
-      shiny::observeEvent(ide$code, {
-        ev <- ls(.GlobalEnv)
-        cl <- as.character(lapply(mget(ev, envir = .GlobalEnv), class))
-        df_envir <- data.frame(
-          Object = ev,
-          Class = cl
-        ) |>
-          dplyr::filter(!Object %in% c("server_console", "server_controls", "server_editor", "ui_console", "ui_controls", "ui_editor", "ui_environment", "catalog"))
-
-        ide$envir <- df_envir
-
-        df_envir <- df_envir |>
-          dplyr::filter(grepl("data.frame|tbl|tbl_df|data.table", Class, ignore.case = TRUE)) |>
-          dplyr::select(DataFrames = Object)
-
-        ide$df <- dplyr::bind_rows(
-          ide$df,
-          df_envir
-        ) |>
-          dplyr::distinct(DataFrames)
-
-        df_pak <- sessionInfo()[["otherPkgs"]]
-        df_pak <- do.call(rbind, lapply(seq_along(df_pak), function(x) {
-          data.frame(
-            Package = df_pak[[x]][["Package"]],
-            Title = df_pak[[x]][["Title"]],
-            Version = df_pak[[x]][["Version"]]
-          )
-        }))
-        ide$pak <- df_pak
-      }, ignoreInit = TRUE)
-
-      # observe viewer outputs ----
-      shiny::observeEvent(ide$view, {
-        shinyjs::delay(1, shinyjs::click(id = "tab_viewer"))
-      }, ignoreInit = TRUE)
-
-
       # ui outputs ----
       output$control <- shiny::renderUI({
         if(ide$tab_control == "environment"){
-          ui_environment(
-            id = "environment"
+          ui_control_environment(
+            id = ns("environment")
           )
         }else if(ide$tab_control == "viewer"){
-          ui_viewer(
-            id = "viewer"
+          ui_control_viewer(
+            id = ns("viewer")
           )
         }
       })

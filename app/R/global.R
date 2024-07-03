@@ -5,10 +5,12 @@ library(shinyAce)
 library(shinyjs)
 # data
 library(dplyr)
+library(jsonlite)
+library(glue)
 # visual
 library(reactable)
 # eval
 library(pander)
-library(base64url)
-
+library(uuid)
+library(qs)
 

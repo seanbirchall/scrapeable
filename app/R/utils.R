@@ -64,7 +64,6 @@ viewerOutput <- function(run){
         run_code <- evals(txt = rerun_code, env = .GlobalEnv)
         run_code[[1]][["result"]]
       }else if(any(class(run[[v]][["result"]]) %in% "gt_tbl") | grepl("gt(", run[[v]][["src"]], fixed = TRUE)){
-        message("hit GT portion")
         rerun_code <- paste0("gt::render_gt({", run[[v]][["src"]], "})")
         run_code <- evals(txt = rerun_code, env = .GlobalEnv)
         run_code[[1]][["result"]]
@@ -87,4 +86,55 @@ viewerOutput <- function(run){
   }
 
   return(NULL)
+}
+
+# reactable buttons ----
+reactable_button <- function(inputId, icon) {
+  glue::glue(
+    "
+    function(cellInfo, state) {{
+      var clickid = '{inputId}';
+      var {{ index }} = cellInfo;
+      return `<i class='{icon} reactable-bttn' style='color:red;' ` +
+        `id='${{index+1}}' ` +
+        `onclick='event.stopPropagation(); Shiny.setInputValue(&#39;${{clickid}}&#39;, this.id, {{priority: &#39;event&#39;}})' ` +
+        `style='padding-left: 0.2em;'></i>`
+    }}
+    "
+  ) |> htmlwidgets::JS()
+}
+
+# get all envrionment objects ----
+get_environment <- function(){
+  environment <- ls(.GlobalEnv)
+  class <- as.character(lapply(mget(environment, envir = .GlobalEnv), class))
+  df_environment <- data.frame(
+    Object = environment,
+    Class = class
+  )
+  if(nrow(df_environment) > 0){
+    df_environment$trash <- NA_character_
+  }else{
+    df_environment$trash <- character(0)
+  }
+  return(df_environment)
+}
+
+# remove object from envrionment ----
+remove_environment <- function(object){
+  rm(list = object, envir = .GlobalEnv)
+  gc()
+}
+
+# get all packages ----
+get_packages <- function(){
+  df_package <- sessionInfo()[["otherPkgs"]]
+  df_package <- do.call(rbind, lapply(seq_along(df_package), function(x) {
+    data.frame(
+      Package = df_package[[x]][["Package"]],
+      Title = df_package[[x]][["Title"]],
+      Version = df_package[[x]][["Version"]]
+    )
+  }))
+  return(df_package)
 }

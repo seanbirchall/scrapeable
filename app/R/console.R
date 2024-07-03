@@ -23,9 +23,10 @@ ui_console <- function(id="console"){
                 class = "button-copy",
                 icon = shiny::icon(
                   "copy"
-                )
+                ),
+                onclick="copy_by_id('console-console', true)"
               ) |>
-                bslib::tooltip("Copy Console (Ctrl+Shift+C)", placement = "bottom"),
+                bslib::tooltip("Copy Console", placement = "bottom"),
               shiny::actionButton(
                 inputId = ns("clear"),
                 label = NULL,
@@ -34,7 +35,7 @@ ui_console <- function(id="console"){
                   "broom"
                 )
               ) |>
-                bslib::tooltip("Clear Console (Ctrl+Shift+L)", placement = "bottom")
+                bslib::tooltip("Clear Console", placement = "bottom")
             )
           )
         )

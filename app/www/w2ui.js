@@ -9,13 +9,13 @@ function makeTabEditable(tabId) {
 
     // Function to check if the new tab name has a valid extension
     function hasValidExtension(name) {
-        return /\.(R|rmd|qmd|app|api|sql)$/i.test(name);
+        return /\.(R|rmd|qmd|app|api|db|sql)$/i.test(name);
     }
 
     // Prompt the user for a new tab name until a valid one is entered
     let newText = prompt("Edit file name: (must end with valid extension)", tab.text);
     while (newText !== null && !hasValidExtension(newText)) {
-        newText = prompt("Invalid extension: (must end with .R, .rmd, .qmd, .app, .api, or .sql)", tab.text);
+        newText = prompt("Invalid extension: (must end with .R, .rmd, .qmd, .app, .api, .db, or .sql)", tab.text);
     }
 
     // If the user cancels the prompt (newText is null), do nothing

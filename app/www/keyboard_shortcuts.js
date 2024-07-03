@@ -1,11 +1,16 @@
 document.addEventListener("keydown", function(event) {
-  if (event.ctrlKey && event.key === "i") {
+  if(event.ctrlKey && event.key === "i"){
+    event.preventDefault();
     document.getElementById("editor-import").click();
   }
-});
-
-document.addEventListener("keydown", function(event) {
-  if (event.ctrlKey && event.shiftKey && event.key === "Enter") {
+  if(event.ctrlKey && event.shiftKey && event.key === "Enter"){
+    event.preventDefault();
     document.getElementById("editor-run").click();
   }
+  //if(event.ctrlKey && event.key === "s"){
+  //  event.preventDefault();
+  //  document.getElementById("share").click();
+  //}
 });
+
+

@@ -138,6 +138,30 @@
   box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
 }
 
+.button-script:hover {
+  background: #778485;
+  color: black;
+  width: 200px;
+}
+
+.button-script:active {
+  background: #778485;
+  color: black;
+  width: 200px;
+}
+
+.button-script:focus {
+  background: #778485;
+  color: black;
+  width: 200px;
+}
+
+.button-script:click {
+  background: #778485;
+  color: black;
+  width: 200px;
+}
+
 .header-sidebar {
   margin-left: 10px;
   font-size: 14px;
@@ -275,6 +299,29 @@
   background: #778485;
   color: black;
   width: 200px;
+}
+
+.p-history {
+  font-family: 'Consolas', monospace;
+  line-height: normal;
+  letter-spacing: -0.00164474px;
+  font-size: 16px;
+  font-kerning: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0px;
+  padding: 0px;
+}
+
+.p-history:hover {
+  background-color: #d7d4f0;
+}
+
+.card-body-flush {
+  padding: 0px;
+  margin: 0px;
+
 }
 
 #editor-language {

@@ -69,104 +69,31 @@ server_editor <- function(id="editor", ide){
     function(input, output, session){
       ns <- session$ns
 
-      # run reactive ----
-      run_selected <- shiny::reactive({
-        list(input$ace_run_code_selected)
-      })
-
-      # observe full run ----
+      # observe source run ----
       shiny::observeEvent(input$run, {
-        shinyjs::addClass(
-          id = "run",
-          class = "disabled"
-        )
+        shinyjs::addClass("run", class = "disabled")
         run <- evals(txt = input$ace, env = .GlobalEnv)
         ide$evals <- run
-        ide$tabs[[ide$tab_selected]] <- input$ace
-        ide$history <- c(ide$history, input$ace)
+        ide$tabs[[ide$tab_selected]][["code"]] <- input$ace
+        ide$history[["code"]] <- c(input$ace, ide$history[["code"]])
+        ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
+        ide$last_run <- input$ace
         ide$viewer <- viewerOutput(run)
-        shinyjs::removeClass(
-          id = "run",
-          class = "disabled"
-        )
+        shinyjs::removeClass("run", class = "disabled")
       }, priority = 1, ignoreInit = TRUE)
 
       # observe selected run ----
-      shiny::observeEvent(run_selected(), {
-        shinyjs::addClass(
-          id = "run",
-          class = "disabled"
-        )
+      shiny::observeEvent(input$ace_run_code_selected, {
+        shinyjs::addClass("run", class = "disabled")
         run <- evals(txt = input$ace_run_code_selected[["selection"]], env = .GlobalEnv)
         ide$evals <- run
-        ide$tabs[[ide$tab_selected]] <- input$ace_run_code_selected[["selection"]]
-        ide$history <- c(ide$history, input$ace_run_code_selected[["selection"]])
+        ide$tabs[[ide$tab_selected]][["code"]] <- input$ace_run_code_selected[["selection"]]
+        ide$history[["code"]] <- c(input$ace_run_code_selected[["selection"]], ide$history[["code"]])
+        ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
+        ide$last_run <- input$ace_run_code_selected[["selection"]]
         ide$viewer <- viewerOutput(run)
-        shinyjs::removeClass(
-          id = "run",
-          class = "disabled"
-        )
+        shinyjs::removeClass("run", class = "disabled")
       }, priority = 1, ignoreInit = TRUE)
-
-      # observe import
-      shiny::observeEvent(input$import, {
-        shiny::showModal(
-          shiny::modalDialog(
-            title = "Data Catalog",
-            shiny::fluidRow(
-              class = "m-0",
-              bslib::card(
-                height = "75vh",
-                style = "padding: 0px;",
-                full_screen = FALSE,
-                fill = TRUE,
-                reactable::reactable(
-                  data = catalog,
-                  minRows = 7,
-                  searchable = TRUE,
-                  highlight = TRUE,
-                  pagination = FALSE,
-                  pageSizeOptions = 10,
-                  wrap = FALSE,
-                  compact = TRUE,
-                  borderless = FALSE,
-                  resizable = TRUE,
-                  language = reactableLang(
-                    searchPlaceholder = "Search...",
-                    noData = "No Match",
-                  ),
-                  theme = reactableTheme(
-                    color = "black",
-                    # backgroundColor = "#f2f2f2",
-                    backgroundColor = "#fff",
-                    rowSelectedStyle = list(
-                      backgroundColor = "lightgrey"
-                    ),
-                    headerStyle = list(
-                      borderColor = "black",
-                      textAlign = "left"
-                    ),
-                    searchInputStyle = list(
-                      color = "black",
-                      backgroundColor = "#ADD6FF26",
-                      width = "100%"
-                    )
-                  ),
-                  columns = list(
-                    DataFrames = colDef(name = "Data Frames"),
-                    .selection = colDef(show = FALSE)
-                  ),
-                  defaultColDef = colDef(align = "left")
-                )
-              )
-            ),
-            footer = NULL,
-            easyClose = TRUE,
-            size = "xl",
-            style = "padding: 0px; height:75vh;"
-          )
-        )
-      })
 
       # code completion ----
       shinyAce::aceAutocomplete(
