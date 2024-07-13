@@ -72,11 +72,15 @@ server_editor <- function(id="editor", ide){
       # observe source run ----
       shiny::observeEvent(input$run, {
         shinyjs::addClass("run", class = "disabled")
+        tic <- Sys.time()
         run <- evals(txt = input$ace, env = .GlobalEnv)
+        toc <- Sys.time()
+        runtime <- toc - tic
         ide$evals <- run
         ide$tabs[[ide$tab_selected]][["code"]] <- input$ace
         ide$history[["code"]] <- c(input$ace, ide$history[["code"]])
         ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
+        ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
         ide$last_run <- input$ace
         ide$viewer <- viewerOutput(run)
         shinyjs::removeClass("run", class = "disabled")

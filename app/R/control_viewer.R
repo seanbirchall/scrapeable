@@ -26,13 +26,14 @@ ui_control_viewer <- function(id="viewer"){
         style = "height: calc(100vh - 43px);",
         bslib::card(
           height = "100%",
-          style = "padding: 0px;",
+          style = "padding: 0px !important; gap: 0px; margin: 0px;",
           full_screen = FALSE,
           fill = TRUE,
           bslib::card_body(
-            style = "padding: 0px;",
+            style = "padding: 0px !important; gap: 0px; margin: 0px;",
             shiny::uiOutput(
-              outputId = ns("viewer")
+              outputId = ns("viewer"),
+              fill = TRUE
             )
           )
         )

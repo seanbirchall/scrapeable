@@ -89,12 +89,13 @@ server_sidebar <- function(id="sidebar", ide){
           lapply(seq_along(ide$history[["code"]]), function(x){
             code <- ide$history[["code"]][x]
             time <- ide$history[["time"]][x]
+            runtime <- ide$history[["runtime"]][x]
             shiny::tags$p(
               class = "p-history",
               onClick = glue::glue("Shiny.setInputValue('selectHistory', {x});"),
               code
             ) |>
-              bslib::tooltip(time)
+              bslib::tooltip(paste(paste0("Run:  ", time), paste("Time: ", round(runtime, 5), attributes(runtime)[["units"]]), sep = "\n"))
           })
         }
       })

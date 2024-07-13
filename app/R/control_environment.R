@@ -45,6 +45,12 @@ server_control_environment <- function(id="environment", ide){
     function(input, output, session){
       ns <- session$ns
 
+      # sub-modules ----
+      server_control_environment_explore(
+        id = "explore",
+        ide = ide
+      )
+
       # observe last run ----
       observeEvent(ide$last_run, {
         ide$environment <- get_environment()
@@ -53,6 +59,7 @@ server_control_environment <- function(id="environment", ide){
 
       # observe table object remove ----
       shiny::observeEvent(input$remove, {
+        ide$environment_removed_index <- as.numeric(input$remove)
         remove_environment(ide$environment[["Object"]][as.numeric(input$remove)])
         ide$environment <- get_environment()
       })
@@ -76,11 +83,16 @@ server_control_environment <- function(id="environment", ide){
             columns = list(
               .selection = colDef(show = FALSE),
               trash = colDef(
-                name = "rm", html = T, width = 40, sticky = "right",
+                name = "rm", html = T, width = 45, sticky = "right",
                 show = TRUE, align = "center", sortable = F,
                 cell = reactable_button(ns("remove"), "fa fa-remove")
               )
             ),
+            details = function(index) {
+              obj <- get(ide$environment[["Object"]][index], envir = .GlobalEnv)
+              structure <- capture.output(str(obj))
+              shiny::tags$pre(paste(structure, collapse = "\n"))
+            },
             style = "font-size: 13px; overflow-x: hidden;",
             defaultSorted = "Class",
             theme = reactableTheme(
@@ -94,6 +106,21 @@ server_control_environment <- function(id="environment", ide){
             )
           )
       })
+
+      # reactive environment selections ----
+      environment_selected <- shiny::reactive({
+        reactable::getReactableState("environment", "selected")
+      })
+      shiny::observeEvent(environment_selected(), {
+        ide$viewer <- NULL
+        ide$environment_selected <- tryCatch(
+          get(
+            ide$environment[["Object"]][environment_selected()],
+            envir = .GlobalEnv
+          ),
+          error = function(e) NULL
+        )
+      }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
       # ui packages ----
       output$package <- reactable::renderReactable({

@@ -8,6 +8,12 @@ consoleOutput <- function(evals){
         evals[[chunk]][["src"]]
       )
     )
+
+    flags <- c("print(", "str(")
+    check_flags <- lapply(flags, function(flag){
+      grepl(flag, src, fixed = TRUE)
+    })
+
     if(is.null(evals[[chunk]][["msg"]][["messages"]])){
       messages <- NULL
     }else{
@@ -26,8 +32,13 @@ consoleOutput <- function(evals){
       errors <- shiny::tags$span(class="r-error", paste(evals[[chunk]][["msg"]][["errors"]], collapse = "\n"))
     }
 
-    if(is.null(evals[[chunk]][["output"]])){
+    if(is.null(evals[[chunk]][["output"]]) & !any(check_flags == TRUE)){
       output <- NULL
+    }else if(any(check_flags == TRUE)){
+      output <- shiny::tags$span(
+        class="r-output",
+        paste(capture.output(eval(parse(text = evals[[chunk]][["src"]]))), collapse = "\n")
+      )
     }else{
       output <- shiny::tags$span(class="r-output", paste(evals[[chunk]][["output"]], collapse = "\n"))
     }
@@ -137,4 +148,52 @@ get_packages <- function(){
     )
   }))
   return(df_package)
+}
+
+# check object ----
+check_object_type <- function(obj) {
+  cls <- class(obj)
+  if (is.null(obj)) {
+    return("NULL")
+  } else if ("data.frame" %in% cls) {
+    return("data.frame")
+  } else if ("matrix" %in% cls) {
+    return("matrix")
+  } else if ("array" %in% cls & !"matrix" %in% cls) {
+    return("array")
+  } else if ("list" %in% cls & !"data.frame" %in% cls) {
+    return("list")
+  } else if ("factor" %in% cls) {
+    return("factor")
+  } else if ("function" %in% cls) {
+    return("function")
+  } else if ("tbl" %in% cls) {
+    return("tibble")
+  } else if ("environment" %in% cls) {
+    return("environment")
+  } else if ("name" %in% cls) {
+    return("symbol")
+  } else if ("expression" %in% cls) {
+    return("expression")
+  } else if ("Date" %in% cls) {
+    return("Date")
+  } else if ("POSIXct" %in% cls || "POSIXlt" %in% cls) {
+    return("datetime")
+  } else if ("complex" %in% cls) {
+    return("complex")
+  } else if ("raw" %in% cls) {
+    return("raw")
+  } else if ("formula" %in% cls) {
+    return("formula")
+  } else if ("ts" %in% cls) {
+    return("time series")
+  } else if ("data.table" %in% cls) {
+    return("data.table")
+  } else if ("Matrix" %in% cls) {
+    return("sparse matrix")
+  } else if (is.vector(obj)) {
+    return("vector")
+  } else {
+    return("other")
+  }
 }

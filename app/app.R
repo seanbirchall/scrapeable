@@ -13,6 +13,15 @@ ui <- bslib::page(
   # css ----
   shiny::tags$head(
     shiny::tags$link(
+      rel = "stylesheet", type = "text/css", href = "handsontable.css"
+    ),
+    shiny::tags$script(
+      type = "text/javascript", src = "handsontable.js"
+    ),
+    shiny::tags$script(
+      type = "text/javascript", src = "df_viewer.js"
+    ),
+    shiny::tags$link(
       rel = "stylesheet", type = "text/css", href = "style.css"
     ),
     shiny::tags$link(
@@ -194,7 +203,7 @@ server <- function(input, output, session) {
   shiny::observe({
     query <- parseQueryString(session$clientData$url_search)
 
-    # ide query ----
+    # initialize tabs on app start ----
     if(!is.null(query[['ide']])){
       if(nchar(query[['ide']]) == 36){
         lookup <- tryCatch(
@@ -212,13 +221,10 @@ server <- function(input, output, session) {
         if(!is.null(lookup)){
           ide$tabs <- lookup
           session$sendCustomMessage("initializeTabs", reactiveValuesToList(ide$tabs))
-          # updateAceEditor(
-          #   session = session,
-          #   editorId = "editor-ace",
-          #   value = lookup
-          # )
         }
       }
+    }else{
+      # session$sendCustomMessage("initializeTabs", reactiveValuesToList(ide$tabs))
     }
 
     # authentication ----

@@ -96,6 +96,10 @@ server_control <- function(id="control", ide){
       # observe control tabs ----
       shiny::observeEvent(input$tab_environment, {
         ide$tab_control <- "environment"
+        if(ide$viewer_shown){
+          ide$viewer <- NULL
+          ide$viewer_shown <- FALSE
+        }
       })
       shiny::observeEvent(input$tab_viewer, {
         ide$tab_control <- "viewer"
