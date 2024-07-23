@@ -45,9 +45,17 @@ server_control_environment <- function(id="environment", ide){
     function(input, output, session){
       ns <- session$ns
 
+      # on-load defaults ----
+      ide$environment_selected_index <- NULL
+
       # sub-modules ----
       server_control_environment_explore(
         id = "explore",
+        ide = ide
+      )
+      # sub-modules ----
+      server_mod_df_viewer(
+        id = "df_viewer",
         ide = ide
       )
 
@@ -120,6 +128,9 @@ server_control_environment <- function(id="environment", ide){
           ),
           error = function(e) NULL
         )
+        if(!is.null(environment_selected())){
+          ide$environment_selected_index <- environment_selected()
+        }
       }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
       # ui packages ----

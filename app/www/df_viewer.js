@@ -1,6 +1,6 @@
 (function() {
   function initializeWidget() {
-    if (typeof HTMLWidgets !== 'undefined') {
+    if (typeof HTMLWidgets !== 'undefined' && typeof Shiny !== 'undefined') {
       HTMLWidgets.widget({
       name: 'df_viewer',
       type: 'output',

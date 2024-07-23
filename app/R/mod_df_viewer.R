@@ -3,6 +3,7 @@ ui_mod_df_viewer <- function(id="df_viewer"){
 
   shiny::tagList(
     bslib::card(
+      id = ns("view"),
       fill = TRUE,
       full_screen = FALSE,
       style = "height: 100vh;",
@@ -10,45 +11,49 @@ ui_mod_df_viewer <- function(id="df_viewer"){
         style = "padding: 0px; margin: 0px; gap: 0px; height: 20px;",
         fluidRow(
           class = "m-0",
-          shiny::tags$div(
-            style = "display: inline-flex; width: 100%;",
-            shiny::selectInput(
-              inputId = ns("rows"),
-              label = NULL,
-              choices = list(
-                First = list(`→50` = 50, `→100` = 100, `→200` = 200, `→500` = 500, `→1000` = 1000),
-                Last = list(`←50` = -50, `←100` = -100, `←200` = -200, `←500` = -500, `←1000` = -1000)
+          shiny::column(
+            width = 12,
+            class = "c-0",
+            shiny::tags$div(
+              class = "header-div-card-left",
+              shiny::uiOutput(
+                outputId = ns("nrow"),
               ),
-              selectize = FALSE,
-              selected = 100,
-              width = "75px"
-            ),
-            shiny::uiOutput(
-              outputId = ns("nrow"),
-            ),
-            shiny::selectInput(
-              inputId = ns("columns"),
-              label = NULL,
-              choices = list(
-                First = list(`→100` = 100),
-                Last = list(`←100` = -100)
+              shiny::selectInput(
+                inputId = ns("rows"),
+                label = NULL,
+                choices = list(
+                  First = list(`→50` = 50, `→100` = 100, `→200` = 200, `→500` = 500, `→1000` = 1000),
+                  Last = list(`←50` = -50, `←100` = -100, `←200` = -200, `←500` = -500, `←1000` = -1000)
+                ),
+                selectize = FALSE,
+                selected = 50,
+                width = "75px"
               ),
-              selectize = FALSE,
-              selected = 100,
-              width = "75px"
-            ),
-            shiny::uiOutput(
-              outputId = ns("ncol")
-            ),
-            shiny::uiOutput(
-              outputId = ns("start")
-            ),
-            shiny::numericInput(
-              inputId = ns("index"),
-              label = NULL,
-              value = 1,
-              min = 1,
-              width = "100px"
+              shiny::uiOutput(
+                outputId = ns("ncol")
+              ),
+              shiny::selectInput(
+                inputId = ns("columns"),
+                label = NULL,
+                choices = list(
+                  First = list(`→100` = 100),
+                  Last = list(`←100` = -100)
+                ),
+                selectize = FALSE,
+                selected = 100,
+                width = "75px"
+              ),
+              shiny::uiOutput(
+                outputId = ns("start")
+              ),
+              shiny::numericInput(
+                inputId = ns("index"),
+                label = NULL,
+                value = 1,
+                min = 1,
+                width = "100px"
+              )
             )
           )
         )
@@ -72,6 +77,32 @@ server_mod_df_viewer <- function(id="df_viewer", ide){
     id,
     function(input, output, session){
       ns <- session$ns
+
+      # df rows ----
+      output$nrow <- shiny::renderUI({
+        rows <- format(nrow(ide$environment_selected), big.mark = ",", scientific = FALSE)
+        shiny::tags$p(
+          paste("Rows:", rows),
+          style = "font-size: 12px; margin-left: -35px;"
+        )
+      })
+
+      # df cols ----
+      output$ncol <- shiny::renderUI({
+        columns <- format(ncol(ide$environment_selected), big.mark = ",", scientific = FALSE)
+        shiny::tags$p(
+          paste("Columns:", columns),
+          style = "font-size: 12px; margin-left: 10px;"
+        )
+      })
+
+      # df index ----
+      output$start <- shiny::renderUI({
+        shiny::tags$p(
+          "Index From:",
+          style = "font-size: 12px; margin-left: 10px;"
+        )
+      })
 
       # df-viewer ----
       output$spreadsheet <- renderdfViewer({
@@ -108,38 +139,17 @@ server_mod_df_viewer <- function(id="df_viewer", ide){
           df <- df[, col_start:ncol(df), drop = FALSE]
         }
 
+        if(is.null(df)){
+          df <- data.frame()
+        }
+
         df_viewer(
           data = df,
           colHeaders = names(df),
           width = "100%"
         )
-      })
-
-      # df rows ----
-      output$nrow <- shiny::renderUI({
-        rows <- format(nrow(ide$environment_selected), big.mark = ",")
-        shiny::tags$p(
-          paste("Rows:", rows),
-          style = "font-size: 12px; margin-left: 10px; width: 250px;"
-        )
-      })
-
-      # df cols ----
-      output$ncol <- shiny::renderUI({
-        columns <- format(ncol(ide$environment_selected), big.mark = ",")
-        shiny::tags$p(
-          paste("Columns:", columns),
-          style = "font-size: 12px; margin-left: 10px; width: 250px;"
-        )
-      })
-
-      # df index ----
-      output$start <- shiny::renderUI({
-        shiny::tags$p(
-          "Index From",
-          style = "font-size: 12px; margin-left: 10px; width: 60px;"
-        )
-      })
+      }) |>
+        shiny::debounce(1000)
     }
   )
 }

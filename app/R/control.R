@@ -42,7 +42,7 @@ ui_control <- function(id="control"){
                   style = "display: flex; align-items: center; justify-content: flex-end;",
                   shiny::actionButton(
                     inputId = "deploy",
-                    label = "Cloud",
+                    label = "Deploy",
                     style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid #eee; background-color: #eee; color: black;",
                     icon = shiny::icon(
                       "cloud-arrow-up"
@@ -95,11 +95,10 @@ server_control <- function(id="control", ide){
 
       # observe control tabs ----
       shiny::observeEvent(input$tab_environment, {
-        ide$tab_control <- "environment"
-        if(ide$viewer_shown){
+        if(ide$show_df_viewer){
           ide$viewer <- NULL
-          ide$viewer_shown <- FALSE
         }
+        ide$tab_control <- "environment"
       })
       shiny::observeEvent(input$tab_viewer, {
         ide$tab_control <- "viewer"
@@ -113,7 +112,8 @@ server_control <- function(id="control", ide){
           )
         }else if(ide$tab_control == "viewer"){
           ui_control_viewer(
-            id = ns("viewer")
+            id = ns("viewer"),
+            fill = ide$show_df_viewer
           )
         }
       })

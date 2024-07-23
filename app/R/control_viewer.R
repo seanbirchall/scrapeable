@@ -1,4 +1,4 @@
-ui_control_viewer <- function(id="viewer"){
+ui_control_viewer <- function(id="viewer", fill){
   ns <- shiny::NS(id)
 
   shiny::tagList(
@@ -33,14 +33,13 @@ ui_control_viewer <- function(id="viewer"){
             style = "padding: 0px !important; gap: 0px; margin: 0px;",
             shiny::uiOutput(
               outputId = ns("viewer"),
-              fill = TRUE
+              fill = fill
             )
           )
         )
       )
     )
   )
-
 }
 
 server_control_viewer <- function(id="viewer", ide){
@@ -52,6 +51,7 @@ server_control_viewer <- function(id="viewer", ide){
 
       # observe clear viewer ----
       shiny::observeEvent(input$clear, {
+        ide$show_df_viewer <- FALSE
         ide$viewer <- NULL
       })
 

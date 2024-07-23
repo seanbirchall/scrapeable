@@ -1,36 +1,5 @@
-/*function storeRefreshToken(refreshToken){
-  localStorage.setItem("refreshToken", refreshToken);
-}
-
-function setIdToken(idToken){
-  Shiny.setInputValue("idToken", idToken);
-}
-
-function handleAuthResponse(data){
-  var idToken = data.id_token;
-  var refreshToken = data.refresh_token;
-  setIdToken(idToken);
-  storeRefreshToken(refreshToken);
-}
-
-function tryAuth(body){
-  fetch('https://scrapeable.auth.us-east-2.amazoncognito.com/oauth2/token/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: body
-  })
-  .then(response => response.json())
-  .then(data => handleAuthResponse(data))
-  .catch(error => {
-    console.log('Error:', error)
-  })
-}
-*/
-
 Shiny.addCustomMessageHandler("refreshToken", function(message) {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const refreshToken = localStorage.getItem("ScrapeableRefreshToken");
   if (!refreshToken) {
     Shiny.setInputValue("refreshTokenError", "No refresh token found");
     return;
@@ -48,6 +17,31 @@ Shiny.addCustomMessageHandler("refreshToken", function(message) {
     })
     .catch(error => {
       Shiny.setInputValue("refreshTokenError", error.toString());
+    });
+});
+
+Shiny.addCustomMessageHandler("authenticate", function(body){
+    return fetch('https://scrapeable.auth.us-east-2.amazoncognito.com/oauth2/token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: body
+    })
+    .then(response => {
+      return response.json().then(data => ({status: response.status, body: data}));
+    })
+    .then(({status, body}) => {
+      if (status !== 200) {
+        throw new Error(JSON.stringify(body));
+      }
+      console.log('Access Token:', body.access_token);
+      console.log('ID Token:', body.id_token);
+      handleAuthResponse(body);
+      return body;
+    })
+    .catch(error => {
+      throw error;
     });
 });
 
@@ -79,6 +73,32 @@ function handleAuthResponse(data) {
   var refreshToken = data.refresh_token;
   Shiny.setInputValue("idToken", idToken);
   if (refreshToken) {
-    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("ScrapeableRefreshToken", refreshToken);
   }
 }
+
+Shiny.addCustomMessageHandler("put_code", function(body){
+    return fetch('https://scrapeable.auth.us-east-2.amazoncognito.com/oauth2/token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: body
+    })
+    .then(response => {
+      return response.json().then(data => ({status: response.status, body: data}));
+    })
+    .then(({status, body}) => {
+      if (status !== 200) {
+        throw new Error(JSON.stringify(body));
+      }
+      console.log('Access Token:', body.access_token);
+      console.log('ID Token:', body.id_token);
+      handleAuthResponse(body);
+      return body;
+    })
+    .catch(error => {
+      throw error;
+    });
+});
+

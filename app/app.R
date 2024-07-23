@@ -2,7 +2,7 @@ ui <- bslib::page(
 
   # global ----
   shinyjs::useShinyjs(),
-  title = "WebR IDE",
+  title = "REPREX IDE",
   theme = bslib::bs_theme(
     preset = "flatly",
     font_scale = 0.95,
@@ -122,6 +122,7 @@ server <- function(input, output, session) {
     last_code = "no-hash",
     show_login = 1,
     show_share = 1,
+    show_df_viewer = FALSE,
     environment = data.frame(
       Object = character(0),
       Class = character(0)
@@ -236,12 +237,7 @@ server <- function(input, output, session) {
         "code=",
         query[['code']]
       )
-      body_js <- jsonlite::toJSON(body, auto_unbox = TRUE)
-      shinyjs::runjs(
-        paste0(
-          "tryAuth(", body_js, ");"
-        )
-      )
+      session$sendCustomMessage("authenticate", body)
     }else{
       session$sendCustomMessage("refreshToken", list())
     }
@@ -288,19 +284,26 @@ server <- function(input, output, session) {
           ),
           auto_unbox = TRUE
         )
-        print(qs::qdeserialize(
-          qs::base91_decode(
-            jsonlite::fromJSON(payload)[["code"]]
-          )
-        ))
       }else{
         id <- ide$last_id
+        payload <- NULL
       }
 
       # remove notification ----
       removeNotification(
         id = "share_notification"
       )
+
+      if(!is.null(payload)){
+        print(jsonlite::fromJSON(payload))
+        print(qs::qdeserialize(as.raw(
+          qs::base91_decode(
+            jsonlite::fromJSON(payload)[["code"]]
+          )
+          )
+          )
+          )
+      }
 
       # share modal ----
       shiny::showModal(

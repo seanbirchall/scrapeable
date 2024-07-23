@@ -5,12 +5,6 @@ server_control_environment_explore <- function(id="explore", ide){
     function(input, output, session){
       ns <- session$ns
 
-      df_viewer <- shiny::reactiveVal(
-        ui_mod_df_viewer(
-          id = ns("df_viewer")
-        )
-      )
-
       # sub-modules ----
       server_mod_df_viewer(
         id = "df_viewer",
@@ -19,12 +13,13 @@ server_control_environment_explore <- function(id="explore", ide){
 
       # show df_viewer ----
       shiny::observeEvent(ide$environment_selected, {
+        ide$viewer <- NULL
         check_type <- check_object_type(ide$environment_selected)
         if(check_type %in% c("data.frame", "matrix", "tibble", "data.table")){
+          ide$show_df_viewer <- TRUE
           ide$viewer <- ui_mod_df_viewer(
             id = ns("df_viewer")
           )
-          ide$viewer_shown <- TRUE
         }
       })
     }

@@ -83,19 +83,29 @@ server_editor <- function(id="editor", ide){
         ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
         ide$last_run <- input$ace
         ide$viewer <- viewerOutput(run)
+        if(!is.null(ide$viewer)){
+          ide$show_df_viewer <- FALSE
+        }
         shinyjs::removeClass("run", class = "disabled")
       }, priority = 1, ignoreInit = TRUE)
 
       # observe selected run ----
       shiny::observeEvent(input$ace_run_code_selected, {
         shinyjs::addClass("run", class = "disabled")
+        tic <- Sys.time()
         run <- evals(txt = input$ace_run_code_selected[["selection"]], env = .GlobalEnv)
+        toc <- Sys.time()
+        runtime <- toc - tic
         ide$evals <- run
         ide$tabs[[ide$tab_selected]][["code"]] <- input$ace_run_code_selected[["selection"]]
         ide$history[["code"]] <- c(input$ace_run_code_selected[["selection"]], ide$history[["code"]])
         ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
+        ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
         ide$last_run <- input$ace_run_code_selected[["selection"]]
         ide$viewer <- viewerOutput(run)
+        if(!is.null(ide$viewer)){
+          ide$show_df_viewer <- FALSE
+        }
         shinyjs::removeClass("run", class = "disabled")
       }, priority = 1, ignoreInit = TRUE)
 
