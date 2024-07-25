@@ -125,8 +125,10 @@ get_environment <- function(){
   )
   if(nrow(df_environment) > 0){
     df_environment$trash <- NA_character_
+    df_environment$Created <- uuid::UUIDgenerate()
   }else{
     df_environment$trash <- character(0)
+    df_environment$Created <- character(0)
   }
   return(df_environment)
 }

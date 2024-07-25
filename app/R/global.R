@@ -10,3 +10,6 @@ library(reactable)
 # eval
 library(pander)
 library(uuid)
+# opts
+pander::cache.off()
+

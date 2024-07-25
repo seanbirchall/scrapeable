@@ -89,12 +89,13 @@ server_control_environment <- function(id="environment", ide){
               noData = "Environment is empty"
             ),
             columns = list(
-              .selection = colDef(show = FALSE),
-              trash = colDef(
+              .selection = reactable::colDef(show = FALSE),
+              trash = reactable::colDef(
                 name = "rm", html = T, width = 45, sticky = "right",
                 show = TRUE, align = "center", sortable = F,
                 cell = reactable_button(ns("remove"), "fa fa-remove")
-              )
+              ),
+              Created = reactable::colDef(show = FALSE)
             ),
             details = function(index) {
               obj <- get(ide$environment[["Object"]][index], envir = .GlobalEnv)

@@ -82,12 +82,16 @@ server_editor <- function(id="editor", ide){
         ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
         ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
         ide$last_run <- input$ace
-        ide$viewer <- viewerOutput(run)
-        if(!is.null(ide$viewer)){
+        viewer <- viewerOutput(run)
+        if(!is.null(viewer)){
           ide$show_df_viewer <- FALSE
+          ide$viewer <- viewer
+        }
+        if(is.null(viewer) & !ide$show_df_viewer & ide$tab_control == "viewer"){
+          shinyjs::click("control-tab_environment", asis = TRUE)
         }
         shinyjs::removeClass("run", class = "disabled")
-      }, priority = 1, ignoreInit = TRUE)
+      }, ignoreInit = TRUE)
 
       # observe selected run ----
       shiny::observeEvent(input$ace_run_code_selected, {
@@ -102,12 +106,16 @@ server_editor <- function(id="editor", ide){
         ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
         ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
         ide$last_run <- input$ace_run_code_selected[["selection"]]
-        ide$viewer <- viewerOutput(run)
-        if(!is.null(ide$viewer)){
+        viewer <- viewerOutput(run)
+        if(!is.null(viewer)){
           ide$show_df_viewer <- FALSE
+          ide$viewer <- viewer
+        }
+        if(is.null(viewer) & !ide$show_df_viewer & ide$tab_control == "viewer"){
+          shinyjs::click("control-tab_environment", asis = TRUE)
         }
         shinyjs::removeClass("run", class = "disabled")
-      }, priority = 1, ignoreInit = TRUE)
+      }, ignoreInit = TRUE)
 
       # code completion ----
       shinyAce::aceAutocomplete(
