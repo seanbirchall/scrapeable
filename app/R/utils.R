@@ -101,17 +101,17 @@ viewerOutput <- function(run){
 
 # reactable buttons ----
 reactable_button <- function(inputId, icon) {
-  glue::glue(
+  paste0(
     "
-    function(cellInfo, state) {{
-      var clickid = '{inputId}';
-      var {{ index }} = cellInfo;
-      return `<i class='{icon} reactable-bttn' style='color:red;' ` +
-        `id='${{index+1}}' ` +
-        `onclick='event.stopPropagation(); Shiny.setInputValue(&#39;${{clickid}}&#39;, this.id, {{priority: &#39;event&#39;}})' ` +
-        `style='padding-left: 0.2em;'></i>`
-    }}
-    "
+  function(cellInfo, state) {
+    var clickid = '", inputId, "';
+    var { index } = cellInfo;
+    return `<i class='", icon, " reactable-bttn' style='color:red;' ` +
+      `id='${index+1}' ` +
+      `onclick='event.stopPropagation(); Shiny.setInputValue(&#39;${clickid}&#39;, this.id, {priority: &#39;event&#39;})' ` +
+      `style='padding-left: 0.2em;'></i>`
+  }
+  "
   ) |> htmlwidgets::JS()
 }
 

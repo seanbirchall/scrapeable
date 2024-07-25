@@ -92,7 +92,6 @@ server_sidebar <- function(id="sidebar", ide){
             runtime <- ide$history[["runtime"]][x]
             shiny::tags$p(
               class = "p-history",
-              onClick = glue::glue("Shiny.setInputValue('selectHistory', {x});"),
               code
             ) |>
               bslib::tooltip(paste(paste0("Run:  ", time), paste("Time: ", round(runtime, 5), attributes(runtime)[["units"]]), sep = "\n"))

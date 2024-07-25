@@ -268,11 +268,13 @@ server <- function(input, output, session) {
       # share tabs ----
       ide$tabs[[ide$tab_selected]][["code"]] <- input[["editor-ace"]]
       tabs <- ide$tabs
-      tabs <- qs::base91_encode(
-        qs::qserialize(
-          tabs
+      tabs <- jsonlite::base64url_enc(
+        serialize(
+          object = tabs,
+          connection = NULL
         )
       )
+      message(tabs)
       if(!identical(tabs, ide$last_tabs)){
         ide$last_tabs <- tabs
         id <- uuid::UUIDgenerate()
@@ -296,8 +298,8 @@ server <- function(input, output, session) {
 
       if(!is.null(payload)){
         print(jsonlite::fromJSON(payload))
-        print(qs::qdeserialize(as.raw(
-          qs::base91_decode(
+        print(unserialize(as.raw(
+          jsonlite::base64url_dec(
             jsonlite::fromJSON(payload)[["code"]]
           )
           )
