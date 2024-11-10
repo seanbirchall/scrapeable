@@ -35,7 +35,9 @@ export declare const RTypeMap: {
     readonly function: 99;
 };
 export type RType = keyof typeof RTypeMap;
-export type RTypeNumber = (typeof RTypeMap)[keyof typeof RTypeMap];
+export type RTypeNumber = typeof RTypeMap[RType];
+/** @internal */
+export type RCtor = 'object' | 'dataframe';
 export type Complex = {
     re: number;
     im: number;

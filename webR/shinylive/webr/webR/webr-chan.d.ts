@@ -5,7 +5,7 @@ import { Message } from './chan/message';
 import { UUID as ShelterID } from './chan/task-common';
 import { EmPtr } from './emscripten';
 import { WebRPayloadWorker, WebRPayloadPtr } from './payload';
-import { RType, WebRData } from './robj';
+import { RType, RCtor, WebRData, WebRDataJsAtomic } from './robj';
 import type { FSType, FSMountOptions } from './webr-main';
 export { isUUID as isShelterID, UUID as ShelterID } from './chan/task-common';
 /** @internal */
@@ -23,10 +23,10 @@ export interface CallRObjectMethodMessage extends Message {
  */
 export interface InstallPackagesOptions {
     /**
-     * The R package repository from which to download packages.
+     * The R package repositories from which to download packages.
      * Default: The configured default webR package repository.
      */
-    repos?: string;
+    repos?: string | string[];
     /**
      * If `true`, do not output downloading messages.
      * Default: `false`.
@@ -40,9 +40,9 @@ export interface InstallPackagesOptions {
 }
 /** @internal */
 export interface InstallPackagesMessage extends Message {
-    type: 'installPackage';
+    type: 'installPackages';
     data: {
-        name: string;
+        name: string | string[];
         options: InstallPackagesOptions;
     };
 }
@@ -67,8 +67,17 @@ export interface EvalROptions {
     captureConditions?: boolean;
     /**
      * Should a new canvas graphics device configured to capture plots be started?
+     * Either a boolean value, or an object with properties corresponding to
+     * `webr::canvas()` graphics device arguments.
+     * Default: `true`.
      */
-    captureGraphics?: boolean;
+    captureGraphics?: boolean | {
+        width: number;
+        height: number;
+        pointsize?: number;
+        bg?: string;
+        capture?: true;
+    };
     /**
      * Should the code automatically print output as if it were written at an R console?
      * Default: `false`.
@@ -131,6 +140,13 @@ export interface FSMountMessage extends Message {
     };
 }
 /** @internal */
+export interface FSSyncfsMessage extends Message {
+    type: 'syncfs';
+    data: {
+        populate: boolean;
+    };
+}
+/** @internal */
 export interface FSReadFileMessage extends Message {
     type: 'readFile';
     data: {
@@ -159,8 +175,8 @@ export interface InvokeWasmFunctionMessage extends Message {
 export interface NewRObjectMessage extends Message {
     type: 'newRObject';
     data: {
-        obj: WebRData;
-        objType: RType | 'object';
+        args: WebRData[];
+        objType: RType | RCtor;
         shelter: ShelterID;
     };
 }
@@ -199,5 +215,20 @@ export interface PagerMessage extends Message {
         header: string;
         title: string;
         deleteFile: boolean;
+    };
+}
+export interface ViewMessage extends Message {
+    type: 'view';
+    data: {
+        data: {
+            [key: string]: WebRDataJsAtomic<string>;
+        };
+        title: string;
+    };
+}
+export interface BrowseMessage extends Message {
+    type: 'browse';
+    data: {
+        url: string;
     };
 }

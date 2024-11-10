@@ -11,3 +11,4 @@ export declare function newCrossOriginWorker(url: string, cb: (worker: Worker) =
 export declare function isCrossOrigin(urlString: string): boolean;
 export declare function isImageBitmap(value: any): value is ImageBitmap;
 export declare function throwUnreachable(context?: string): void;
+export declare function bufferToBase64(buffer: ArrayBuffer): string;

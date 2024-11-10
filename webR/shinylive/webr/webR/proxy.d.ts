@@ -5,7 +5,7 @@
  */
 import { ChannelMain } from './chan/channel';
 import { WebRPayloadPtr } from './payload';
-import { RType } from './robj';
+import { RType, RCtor } from './robj';
 import * as RWorker from './robj-worker';
 import { ShelterID } from './webr-chan';
 /**
@@ -110,11 +110,11 @@ export declare function newRProxy(chan: ChannelMain, payload: WebRPayloadPtr): R
  * Proxy an {@link RWorker.RObject} class.s
  * @param {ChannelMain} chan The current main thread communication channel.
  * @param {ShelterID} shelter The shelter ID to protect returned objects with.
- * @param {(RType | 'object')} objType The R object type, or `'object'` for the
- * generic {@link RWorker.RObject} class.
+ * @param {(RType | RCtor)} objType The R object type or class, `'object'` for
+ * the generic {@link RWorker.RObject} class.
  * @returns {ProxyConstructor} A proxy to the R object subclass corresponding to
  * the given value of the `objType` argument.
  * @typeParam T The type of the {@link RWorker.RObject} class to be proxied.
  * @typeParam R The type to be returned from the proxied class constructor.
  */
-export declare function newRClassProxy<T, R>(chan: ChannelMain, shelter: ShelterID, objType: RType | 'object'): ProxyConstructor<T, R>;
+export declare function newRClassProxy<T, R>(chan: ChannelMain, shelter: ShelterID, objType: RType | RCtor): ProxyConstructor<T, R>;
