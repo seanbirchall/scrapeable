@@ -7,6 +7,13 @@ document.addEventListener("keydown", function(event) {
     event.preventDefault();
     document.getElementById("editor-run").click();
   }
+  if (event.ctrlKey && event.key === "Enter") {
+    event.preventDefault();
+    const applyButton = document.getElementById("modal-modal_df_viewer-apply");
+    if (applyButton) {
+      applyButton.click();
+    }
+  }
   //if(event.ctrlKey && event.key === "s"){
   //  event.preventDefault();
   //  document.getElementById("share").click();

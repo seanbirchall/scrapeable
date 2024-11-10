@@ -65,7 +65,10 @@ ui_control <- function(id="control"){
           bslib::card_body(
             style = "padding: 0px; margin: 0px;",
             height = "100%",
-            shiny::uiOutput(ns("control"))
+            shiny::uiOutput(ns("control")),
+            shinyjs::hidden(
+              shiny::tags$div(id = ns("object_viewer"))
+            )
           )
         )
       )
@@ -96,7 +99,7 @@ server_control <- function(id="control", ide){
       # observe control tabs ----
       shiny::observeEvent(input$tab_environment, {
         if(ide$show_df_viewer){
-          ide$viewer <- NULL
+          # ide$viewer <- NULL
         }
         ide$tab_control <- "environment"
       })
@@ -113,7 +116,8 @@ server_control <- function(id="control", ide){
         }else if(ide$tab_control == "viewer"){
           ui_control_viewer(
             id = ns("viewer"),
-            fill = ide$show_df_viewer
+            fill = TRUE
+            # fill = ide$show_df_viewer
           )
         }
       })

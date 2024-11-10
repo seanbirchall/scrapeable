@@ -1,5 +1,36 @@
 let ind = 2;
 
+Shiny.addCustomMessageHandler("initialize_tabs", function(message){
+  const tab_start = message.tabs;
+  ind = tab_start.length + 1;
+  if(tabs.get('tab1')){
+    tabs.remove('tab1');
+  }
+  if(tabs.get('add')){
+    tabs.remove('add');
+  }
+  if(Array.isArray(tab_start) && tab_start.length > 1){
+    tabs.add(
+      tab_start.map((text, index) => ({
+        id: 'tab' + (index + 1),
+        text: text,
+        closable: true
+      }))
+    );
+  }else{
+    tabs.add({
+      id: 'tab1',
+      text: Array.isArray(tab_start) ? tab_start[0] : tab_start,
+      closable: true
+    });
+  }
+  tabs.add({ id: 'add', text: '✚' });
+  tabs.refresh();
+  tabs.click('tab1')
+  Shiny.setInputValue('tabs_ready', Date.now());
+});
+
+
 function makeTabEditable(tabId) {
     let tab = w2ui['tabs'].get(tabId);
     if (!tab) {
@@ -9,13 +40,13 @@ function makeTabEditable(tabId) {
 
     // Function to check if the new tab name has a valid extension
     function hasValidExtension(name) {
-        return /\.(R|rmd|qmd|app|api|db|sql)$/i.test(name);
+        return /\.(R|rmd|qmd|md|app|api|db|sql|js)$/i.test(name);
     }
 
     // Prompt the user for a new tab name until a valid one is entered
     let newText = prompt("Edit file name: (must end with valid extension)", tab.text);
     while (newText !== null && !hasValidExtension(newText)) {
-        newText = prompt("Invalid extension: (must end with .R, .rmd, .qmd, .app, .api, .db, or .sql)", tab.text);
+        newText = prompt("Valid extension: .R, .RMD, .QMD, .MD, .APP, .API, .DB, .JS or .SQL", tab.text);
     }
 
     // If the user cancels the prompt (newText is null), do nothing
@@ -27,7 +58,7 @@ function makeTabEditable(tabId) {
 }
 
 // Initialize the tabs
-new w2tabs({
+let tabs = new w2tabs({
     box: '#editor-tabs',
     name: 'tabs',
     active: 'tab1',

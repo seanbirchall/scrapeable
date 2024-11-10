@@ -42,6 +42,7 @@ ui_console <- function(id="console"){
       ),
       bslib::card_body(
         style = "padding: 0px; margin-left: 10px;",
+        class = "body-card",
         shiny::uiOutput(
           outputId = ns("console")
         )

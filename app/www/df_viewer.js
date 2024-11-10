@@ -29,6 +29,9 @@
               manualRowResize: true,
               wordWrap: false,
               readOnly: true,
+              afterInit: function() {
+                this.selectCell(0, 0);
+              },
               dropdownMenu: {
                 items: {
                     'h0': {
@@ -39,7 +42,9 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'rename', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          var lastColumnIndex = hot.countCols() - 1;
+                          Shiny.setInputValue('modal_df_viewer', {action: 'rename', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          hot.deselectCell();
                         }
                       }
                     },
@@ -48,7 +53,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'select', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'select', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -62,7 +67,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'reorder:asc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'reorder:asc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -72,17 +77,20 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'reorder:desc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'reorder:desc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
                           {
+                            name: '---------'
+                          },
+                          {
                             key: 'reorder:maual',
-                            name: 'Manual Order',
+                            name: '✚',
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'reorder:manual', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'reorder:manual', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -102,7 +110,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:isequalto', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:isequalto', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -112,7 +120,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:isnotequalto', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:isnotequalto', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -122,7 +130,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:isin', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:isin', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -132,7 +140,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:isnotin', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:isnotin', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -142,7 +150,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:contain', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:contain', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -152,7 +160,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'filter:doesnotcontain', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'filter:doesnotcontain', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -164,7 +172,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'distinct', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'distinct', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -173,7 +181,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'groupby', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'groupby', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -182,7 +190,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'summarize', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'summarize', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -191,7 +199,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'calc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'calc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -200,7 +208,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'windowcalc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'windowcalc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -214,7 +222,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'arrange:asc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'arrange:asc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -224,7 +232,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'arrange:desc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'arrange:desc', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           }
@@ -239,16 +247,25 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'join', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'join', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
-                    'append': {
+                    'update': {
+                      name: 'Update / Insert',
+                      callback: function(key, options) {
+                        if (typeof Shiny !== 'undefined') {
+                          counter++
+                          Shiny.setInputValue('modal_df_viewer', {action: 'update', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                        }
+                      }
+                    },
+                                        'append': {
                       name: 'Append (Add Rows)',
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'append', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'append', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -257,7 +274,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'pivotlonger', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'pivotlonger', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -266,7 +283,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'pivotwider', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'pivotwider', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -275,7 +292,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'separate', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'separate', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -284,7 +301,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'unite', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'unite', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -293,7 +310,7 @@
                       callback: function(key, options) {
                         if (typeof Shiny !== 'undefined') {
                           counter++
-                          Shiny.setInputValue('df_viewer_modal', {action: 'cross', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                          Shiny.setInputValue('modal_df_viewer', {action: 'cross', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                         }
                       }
                     },
@@ -310,7 +327,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:numeric', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:numeric', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -320,7 +337,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:date', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:date', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -330,7 +347,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:time', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:time', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -340,7 +357,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:character', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:character', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -350,7 +367,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:logical', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:logical', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           },
@@ -360,7 +377,7 @@
                             callback: function(key, options) {
                               if (typeof Shiny !== 'undefined') {
                                 counter++
-                                Shiny.setInputValue('df_viewer_modal', {action: 'change:factor', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
+                                Shiny.setInputValue('modal_df_viewer', {action: 'change:factor', hit: counter, column: hot.getColHeader(hot.getSelected()[0][1])});
                               }
                             }
                           }

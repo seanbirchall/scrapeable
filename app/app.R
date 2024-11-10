@@ -5,6 +5,7 @@ ui <- bslib::page(
   title = "REPREX IDE",
   theme = bslib::bs_theme(
     preset = "flatly",
+    secondary = "#f3969a",
     font_scale = 0.95,
     `enable-rounded` = FALSE,
     `enable-transitions` = FALSE
@@ -15,11 +16,17 @@ ui <- bslib::page(
     shiny::tags$link(
       rel = "stylesheet", type = "text/css", href = "handsontable.css"
     ),
+    tags$script(
+      type = "module", src = "duckdb.js"
+    ),
     shiny::tags$script(
       type = "text/javascript", src = "handsontable.js"
     ),
     shiny::tags$script(
-      type = "text/javascript", src = "df_viewer.js"
+      type = "text/javascript", src = "df_viewer2.js"
+    ),
+    shiny::tags$script(
+      type = "text/javascript", src = "view.js"
     ),
     shiny::tags$link(
       rel = "stylesheet", type = "text/css", href = "style.css"
@@ -40,6 +47,47 @@ ui <- bslib::page(
     class = "main-container",
     full_screen = FALSE,
     fill = TRUE,
+    bslib::card_header(
+      class = "header-search",
+      shiny::tags$div(
+        class = "header-search-container-left"
+      ),
+      shiny::tags$div(
+        class = "header-search-container-center",
+        shiny::selectizeInput(
+          inputId = "search",
+          label = NULL,
+          width = "100%",
+          multiple = TRUE,
+          choices = NULL,
+          options = list(
+            # valueField = "id",
+            # labelField = "label",
+            # searchField = c("id", "name", "description", "tag"),
+            placeholder = "🔍 Search for code snippets.... (coming soon!)",
+            maxOptions = 10,
+            maxItems = 1,
+            create = TRUE
+          )
+        ) |>
+          htmltools::tagAppendAttributes(class = "header-search-selectize")
+      ),
+      shiny::tags$div(
+        class = "header-search-container-right",
+        shiny::uiOutput(
+          outputId = "logged_in"
+        ),
+        shiny::actionButton(
+          inputId = "login",
+          label = NULL,
+          icon = shiny::icon(
+            "user"
+          ),
+          class = "button-login"
+        ) |>
+          bslib::tooltip("Login / Sign Up", placement = "bottom")
+      )
+    ),
     bslib::layout_sidebar(
       class = "container-sidebar-layout",
       sidebar = ui_sidebar(
@@ -78,6 +126,9 @@ ui <- bslib::page(
       type = "text/javascript", src = "split.min.JS"
     ),
     shiny::tags$script(
+      type = "text/javascript", src = "split.js"
+    ),
+    shiny::tags$script(
       type = "text/javascript", src = "w2ui-2.0.min.js"
     ),
     shiny::tags$script(
@@ -96,6 +147,9 @@ ui <- bslib::page(
       type = "text/javascript", src = "copy_by_id.js"
     ),
     shiny::tags$script(
+      type = "text/javascript", src = "put_code.js"
+    ),
+    shiny::tags$script(
       type = "text/javascript", src = "keyboard_shortcuts.js"
     )
   )
@@ -103,7 +157,7 @@ ui <- bslib::page(
 
 server <- function(input, output, session) {
 
-  # tab text w2ui['tabs'].get('tab2').text = 'new.r'; w2ui['tabs'].refresh();
+  # shinyjs::hide("pane-control")
 
   # on-load ide ----
   ide <- shiny::reactiveValues(
@@ -115,13 +169,14 @@ server <- function(input, output, session) {
     ),
     tabs_available = "tab1",
     tab_selected = "tab1",
-    tab_extension = "r",
-    tab_previous = NULL,
+    tab_previous = "tab1",
+    tab_selected_extension = "r",
     history = NULL,
     last_run = "",
     last_code = "no-hash",
     show_login = 1,
     show_share = 1,
+    show_notification = 1,
     show_df_viewer = FALSE,
     environment = data.frame(
       Object = character(0),
@@ -132,6 +187,10 @@ server <- function(input, output, session) {
   # sub-modules ----
   server_sidebar(
     id = "sidebar",
+    ide = ide
+  )
+  server_modal(
+    id = "modal",
     ide = ide
   )
   server_editor(
@@ -147,22 +206,34 @@ server <- function(input, output, session) {
     ide = ide
   )
 
+  # events ----
+  observeEvent(input$login, {
+    ide$show_login <- ide$show_login + 1
+  })
+
+  # extension ----
+  observeEvent(ide$tab_selected, {
+    ide$tab_selected_extension <- tolower(
+      tools::file_ext(ide$tabs[[ide$tab_selected]][["name"]])
+    )
+  })
+
   # selected tab ----
   observeEvent(input$tab, {
     tab_new <- input$tab
     ide$tab_selected <- tab_new
-    # save previous tab code
+    ## save previous tab code ----
     if(!is.null(ide$tab_previous)){
       ide$tabs[[ide$tab_previous]][["code"]] <- input[["editor-ace"]]
     }
-    # create new tab
+    ## create new tab ----
     if(!tab_new %in% names(ide$tabs)){
       ide$tabs[[tab_new]][["code"]] <- ""
       tab_name <- paste0("script", gsub("[^0-9]", "", tab_new), ".R")
       ide$tabs[[tab_new]][["name"]] <- tab_name
       ide$tabs_available <- c(ide$tabs_available, tab_new)
     }
-    # Update Ace with code
+    ## Update Ace with code ----
     updateAceEditor(
       session = session,
       editorId = "editor-ace",
@@ -176,35 +247,45 @@ server <- function(input, output, session) {
     tab_to_close <- input$tab_close
     ide$tabs_available <- ide$tabs_available[!ide$tabs_available %in% tab_to_close]
     ide$tabs <- ide$tabs[ide$tabs_available]
-    if(tab_to_close == input$tab){
-      tab_selected <- names(ide$tabs)[1]
-      if(is.na(tab_selected)){
-        shinyjs::click(
-          id = "tabs_tabs_tab_add"
-        )
-      }else{
-        shinyjs::click(
-          id = paste0("tabs_tabs_tab_", tab_selected)
-        )
+    if(!is.null(input$tab)){
+      if(tab_to_close == input$tab){
+        tab_selected <- names(ide$tabs)[1]
+        if(is.na(tab_selected)){
+          shinyjs::click(
+            id = "tabs_tabs_tab_add"
+          )
+        }else{
+          shinyjs::click(
+            id = paste0("tabs_tabs_tab_", tab_selected)
+          )
+        }
       }
+    }else{
+      shinyjs::click(
+        id = "tabs_tabs_tab_add"
+      )
     }
   })
 
   # tab edited ----
-  observeEvent(input$tab_edit, {
+  shiny::observeEvent(input$tab_edit, {
     tab_edit <- input$tab_edit
     tab_edited <- tab_edit[["tabId"]]
     tab_edited_name <- tab_edit[["newName"]]
+    ide$tab_selected_extension <- tolower(
+      tools::file_ext(tab_edited_name)
+    )
     if(tab_edited %in% ide$tabs_available){
       ide$tabs[[tab_edited]][["name"]] <- tab_edited_name
     }
   })
 
+  # session$sendCustomMessage("refreshToken", list())
   # on start observe query parameters ----
-  shiny::observe({
+  shiny::observeEvent(session$clientData$url_search, {
     query <- parseQueryString(session$clientData$url_search)
 
-    # initialize tabs on app start ----
+    ## initialize tabs on app start ----
     if(!is.null(query[['ide']])){
       if(nchar(query[['ide']]) == 36){
         lookup <- tryCatch(
@@ -214,21 +295,53 @@ server <- function(input, output, session) {
               query[['ide']],
               ".json"
             )
-          )[["code"]],
+          ),
           error = function(e){
             NULL
           }
         )
         if(!is.null(lookup)){
-          ide$tabs <- lookup
-          session$sendCustomMessage("initializeTabs", reactiveValuesToList(ide$tabs))
+          tabs <- lookup[["code"]]
+          tabs <- unserialize(
+            jsonlite::base64url_dec(
+              tabs
+            )
+          )
+          names(tabs) <- paste0("tab", seq_along(names(tabs)))
+          ide$tabs <- tabs
+          ide$tabs_available <- names(tabs)
+          name <- unlist(ide$tabs)
+          name <- as.character(name[grep("\\.name$", names(name))])
+          session$sendCustomMessage(
+            "initialize_tabs",
+            message = list(
+              tabs = name
+            )
+          )
+          shinyAce::updateAceEditor(
+            session = session,
+            editorId = "editor-ace",
+            value = ide$tabs[["tab1"]][["code"]]
+          )
+        }else{
+          show_notification(
+            type = "error",
+            msg = "Bad Share Link",
+            duration = 5,
+            id = "notification_login"
+          )
         }
+      }else{
+        show_notification(
+          type = "error",
+          msg = "Bad Share Link",
+          duration = 5,
+          id = "notification_login"
+        )
       }
-    }else{
-      # session$sendCustomMessage("initializeTabs", reactiveValuesToList(ide$tabs))
     }
 
-    # authentication ----
+    ## authentication ----
     if(!is.null(query[['code']])){
       body <- paste0(
         "grant_type=authorization_code&",
@@ -238,8 +351,6 @@ server <- function(input, output, session) {
         query[['code']]
       )
       session$sendCustomMessage("authenticate", body)
-    }else{
-      session$sendCustomMessage("refreshToken", list())
     }
   })
 
@@ -251,21 +362,14 @@ server <- function(input, output, session) {
   # observe share link ----
   shiny::observeEvent(input$share, {
     if(!is.null(session$userData$authentication)){
-      # share notification ----
-      shiny::showNotification(
-        ui = shiny::tagList(
-          shiny::tags$div(
-            shiny::tags$p(
-              "Preparing Share Link"
-            )
-          )
-        ),
-        id = "share_notification",
-        type = "message",
-        duration = 20
+      ## share notification ----
+      show_notification(
+        type = "loading",
+        msg = "Preparing Share Link",
+        duration = 5,
+        id = "notification_share"
       )
-
-      # share tabs ----
+      ## share tabs ----
       ide$tabs[[ide$tab_selected]][["code"]] <- input[["editor-ace"]]
       tabs <- ide$tabs
       tabs <- jsonlite::base64url_enc(
@@ -274,94 +378,155 @@ server <- function(input, output, session) {
           connection = NULL
         )
       )
-      message(tabs)
+      ## check new code ----
       if(!identical(tabs, ide$last_tabs)){
         ide$last_tabs <- tabs
         id <- uuid::UUIDgenerate()
         ide$last_id <- id
-        payload <- jsonlite::toJSON(
-          data.frame(
-            code = tabs,
-            id = id
-          ),
-          auto_unbox = TRUE
+        payload <- list(
+          code = tabs,
+          id = id
         )
       }else{
         id <- ide$last_id
         payload <- NULL
+        if(ide$code_received > 0){
+          ide$code_received <- as.integer(Sys.time())
+        }else{
+          ide$code_received <- -as.integer(Sys.time())
+        }
       }
-
-      # remove notification ----
-      removeNotification(
-        id = "share_notification"
-      )
-
+      ## send payload if not null ----
       if(!is.null(payload)){
-        print(jsonlite::fromJSON(payload))
-        print(unserialize(as.raw(
-          jsonlite::base64url_dec(
-            jsonlite::fromJSON(payload)[["code"]]
+        session$sendCustomMessage(
+          type = "put_code",
+          message = list(
+            payload = payload,
+            token = session$userData$authentication
           )
-          )
-          )
-          )
-      }
-
-      # share modal ----
-      shiny::showModal(
-        shiny::modalDialog(
-          title = "IDE URL",
-          shiny::fluidRow(
-            shiny::column(
-              width = 9,
-              shiny::textInput(
-                inputId = "share_text",
-                label = NULL,
-                width = "100%",
-                value = paste0("https://www.scrapeable.com/webR/?ide=", id)
-              )
-            ),
-            shiny::column(
-              width = 3,
-              shiny::actionButton(
-                inputId = "share_ide",
-                label = "Copy URL",
-                icon = shiny::icon(
-                  "link"
-                ),
-                onclick="copy_by_id('share_text', false)",
-                style = "width: 150px;"
-              )
-            )
-          ),
-          easyClose = TRUE,
-          footer = NULL,
-          size = "xl"
         )
-      )
+      }
     }else{
-      shinyjs::click("sidebar-login")
-      shiny::showNotification(
-        ui = shiny::tagList(
-          shiny::tags$div(
-            shiny::tags$p(
-              "Please Login to Share"
-            )
-          )
-        ),
-        type = "warning",
-        duration = 5
+      ## unauthenticated share ----
+      shinyjs::click("login")
+      shiny::removeNotification(
+        id = "notification_login",
+      )
+      show_notification(
+        type = "error",
+        msg = "Please Login to Share",
+        duration = 5,
+        id = "notification_login"
       )
     }
   })
 
-  # on start click ----
-  shinyjs::click(
-    id = "editor-run"
-  )
-  shinyjs::click(
-    id = "tabs_tabs_tab_tab1"
-  )
+  # successful share code ----
+  shiny::observeEvent(input$code_received, {
+    ide$code_received <- as.numeric(input$code_received)
+  })
+  shiny::observeEvent(ide$code_received, {
+    if(ide$code_received > 0){
+      show_notification(
+        type = "success",
+        msg = "Share Link Ready!",
+        duration = 5,
+        id = "notification_share"
+      )
+      ide$show_share <- ide$show_share + 1
+    }else{
+      show_notification(
+        type = "error",
+        msg = "Share Link Failed",
+        duration = 5,
+        id = "notification_share"
+      )
+    }
+  })
+
+  # df_viewer modal ----
+  shiny::observeEvent(input$modal_df_viewer, {
+    ide$modal_df_viewer <- input$modal_df_viewer
+  })
+
+  # duckdb ----
+  shiny::observeEvent(input$duckdb_r_result, {
+    evals <- duckdb_response(
+      result = input$duckdb_r_result,
+      environment = ide$environment
+    )
+
+    if(is.null(evals)){
+      result <- input$duckdb_r_result
+      id <- result[["id"]]
+      evals <- list(
+        list(
+          src = result[["query"]],
+          result = NULL,
+          output = paste(capture.output(glimpse(result)), collapse = "\n"),
+          type = "duckdb_r_result",
+          msg = list(
+            messages = if(result$message == "success") paste("Query ID:", id, "ran successfully") else NULL,
+            warnings = NULL,
+            errors = if(result$message == "success"){
+              NULL
+            }else{
+              if(jsonlite::validate(result$message)){
+                jsonlite::fromJSON(result$message)
+              }else{
+                result$message
+              }
+            }
+          )
+        )
+      )
+    }
+    ide$evals <- evals
+    ide$environment <- get_environment()
+  })
+
+  # duckdb sql ----
+  observeEvent(input$duckdb_sql_result, {
+    result <- input$duckdb_sql_result
+    evals <- list(
+      list(
+        src = result[["query"]],
+        result = NULL,
+        output = NULL,
+        type = "duckdb_sql_result",
+        msg = list(
+          messages = if(result[["message"]] == "success") paste("Query ID:", result[["id"]], "ran successfully") else NULL,
+          warnings = NULL,
+          errors = if(result[["message"]] == "success"){
+            NULL
+          }else{
+            if(jsonlite::validate(result[["message"]])){
+              jsonlite::fromJSON(result[["message"]])
+            }else{
+              result[["message"]]
+            }
+          }
+        )
+      )
+    )
+    ide$environment_selected[["data"]] <- tryCatch(
+      fromJSON(result[["data"]]),
+      error = function(e) NULL
+    )
+    ide$evals <- evals
+  })
+
+  # view shim ----
+  shiny::observeEvent(input$view, {
+    code <- input$view[["object"]]
+    parse <- evals(code)
+    l <- max(length(parse), na.rm = T)
+    result <- parse[[l]][["result"]]
+    check_type <- check_object_type(result)
+    if(check_type %in% c("data.frame", "matrix", "tibble", "data.table")){
+      ide$environment_selected[["data"]] <- result
+    }
+  })
 }
 
 shinyApp(ui = ui, server = server)

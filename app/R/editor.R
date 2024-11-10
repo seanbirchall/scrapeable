@@ -50,7 +50,7 @@ ui_editor <- function(id="editor"){
           debounce = 0.01,
           tabSize = 2,
           selectionId = "selection",
-          placeholder = "Write some R code to get started...",
+          placeholder = "Write some code to get started...",
           hotkeys = list(
             run_code_selected = list(
               win = "Ctrl-Enter",
@@ -72,17 +72,17 @@ server_editor <- function(id="editor", ide){
       # observe source run ----
       shiny::observeEvent(input$run, {
         shinyjs::addClass("run", class = "disabled")
-        tic <- Sys.time()
-        run <- evals(txt = input$ace, env = .GlobalEnv)
-        toc <- Sys.time()
-        runtime <- toc - tic
-        ide$evals <- run
+        run <- eval_code(
+          code = input$ace,
+          ext = ide$tab_selected_extension
+        )
+        ide$evals <- run[["evals"]]
         ide$tabs[[ide$tab_selected]][["code"]] <- input$ace
         ide$history[["code"]] <- c(input$ace, ide$history[["code"]])
-        ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
-        ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
+        ide$history[["start_time"]] <- c(run[["start_time"]], ide$history[["start_time"]])
+        ide$history[["run_time"]] <- c(run[["run_time"]], ide$history[["run_time"]])
         ide$last_run <- input$ace
-        viewer <- viewerOutput(run)
+        viewer <- run[["viewer"]]
         if(!is.null(viewer)){
           ide$show_df_viewer <- FALSE
           ide$viewer <- viewer
@@ -96,17 +96,17 @@ server_editor <- function(id="editor", ide){
       # observe selected run ----
       shiny::observeEvent(input$ace_run_code_selected, {
         shinyjs::addClass("run", class = "disabled")
-        tic <- Sys.time()
-        run <- evals(txt = input$ace_run_code_selected[["selection"]], env = .GlobalEnv)
-        toc <- Sys.time()
-        runtime <- toc - tic
-        ide$evals <- run
-        ide$tabs[[ide$tab_selected]][["code"]] <- input$ace_run_code_selected[["selection"]]
-        ide$history[["code"]] <- c(input$ace_run_code_selected[["selection"]], ide$history[["code"]])
-        ide$history[["time"]] <- c(format(Sys.time(), "%Y-%m-%d %I:%M:%S %p"), ide$history[["time"]])
-        ide$history[["runtime"]] <- c(runtime, ide$history[["runtime"]])
-        ide$last_run <- input$ace_run_code_selected[["selection"]]
-        viewer <- viewerOutput(run)
+        run <- eval_code(
+          code = input$ace_selection,
+          ext = ide$tab_selected_extension
+        )
+        ide$evals <- run[["evals"]]
+        ide$tabs[[ide$tab_selected]][["code"]] <- input$ace_selection
+        ide$history[["code"]] <- c(input$ace_selection, ide$history[["code"]])
+        ide$history[["start_time"]] <- c(run[["start_time"]], ide$history[["start_time"]])
+        ide$history[["run_time"]] <- c(run[["run_time"]], ide$history[["run_time"]])
+        ide$last_run <- input$ace_selection
+        viewer <- run[["viewer"]]
         if(!is.null(viewer)){
           ide$show_df_viewer <- FALSE
           ide$viewer <- viewer
@@ -115,6 +115,35 @@ server_editor <- function(id="editor", ide){
           shinyjs::click("control-tab_environment", asis = TRUE)
         }
         shinyjs::removeClass("run", class = "disabled")
+      }, ignoreInit = TRUE)
+
+      # observe extension ----
+      shiny::observeEvent(ide$tab_selected_extension, {
+        if(ide$tab_selected_extension %in% c("r", "rmd", "qmd", "md", "app", "api", "db")){
+          shinyAce::updateAceEditor(
+            session = session,
+            editorId = "ace",
+            mode = "r",
+            autoComplete = "live",
+            autoCompleters = c("static", "rlang", "snippet", "text", "keyword")
+          )
+        }else if(ide$tab_selected_extension == "sql"){
+          shinyAce::updateAceEditor(
+            session = session,
+            editorId = "ace",
+            mode = "sql",
+            autoComplete = "live",
+            autoCompleters = c("static", "snippet", "text", "keyword")
+          )
+        }else if(ide$tab_selected_extension == "js"){
+          shinyAce::updateAceEditor(
+            session = session,
+            editorId = "ace",
+            mode = "javascript",
+            autoComplete = "live",
+            autoCompleters = c("static", "snippet", "text", "keyword")
+          )
+        }
       }, ignoreInit = TRUE)
 
       # code completion ----

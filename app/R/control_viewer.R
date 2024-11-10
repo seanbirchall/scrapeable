@@ -23,7 +23,7 @@ ui_control_viewer <- function(id="viewer", fill){
       ),
       shiny::fluidRow(
         class = "m-0",
-        style = "height: calc(100vh - 43px);",
+        style = "height: calc(100vh - 68px);",
         bslib::card(
           height = "100%",
           style = "padding: 0px !important; gap: 0px; margin: 0px;",
@@ -49,10 +49,22 @@ server_control_viewer <- function(id="viewer", ide){
     function(input, output, session){
       ns <- session$ns
 
+      # sub-modules ----
+      server_control_viewer_df(
+        id = "df_viewer",
+        ide = ide
+      )
+      server_control_viewer_app(
+        id = "app",
+        ide = ide
+      )
+
       # observe clear viewer ----
       shiny::observeEvent(input$clear, {
         ide$show_df_viewer <- FALSE
+        ide$environment_selected <- NULL
         ide$viewer <- NULL
+        ide$df_viewer <- NULL
       })
 
       # observe viewer ----
@@ -66,6 +78,10 @@ server_control_viewer <- function(id="viewer", ide){
 
       # ui viewer ----
       output$viewer <- shiny::renderUI({
+        shiny::req(ide$viewer)
+        if(length(ide$viewer) > 1){
+          ide$show_df_viewer <- FALSE
+        }
         lapply(seq_along(ide$viewer), function(widget){
           bslib::card(
             ide$viewer[[widget]],
@@ -74,6 +90,18 @@ server_control_viewer <- function(id="viewer", ide){
             style = "padding: 0px; margin: 0px;"
           )
         })
+      })
+
+      # show df_viewer ----
+      shiny::observeEvent(ide$environment_selected, {
+        ide$viewer <- NULL
+        check_type <- check_object_type(ide$environment_selected[["data"]])
+        if(check_type %in% c("data.frame", "matrix", "tibble", "data.table")){
+          ide$show_df_viewer <- TRUE
+          ide$viewer <- ui_control_viewer_df(
+            id = ns("df_viewer")
+          )
+        }
       })
     }
   )

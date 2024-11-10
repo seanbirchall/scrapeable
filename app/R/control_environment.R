@@ -48,20 +48,10 @@ server_control_environment <- function(id="environment", ide){
       # on-load defaults ----
       ide$environment_selected_index <- NULL
 
-      # sub-modules ----
-      server_control_environment_explore(
-        id = "explore",
-        ide = ide
-      )
-      # sub-modules ----
-      server_mod_df_viewer(
-        id = "df_viewer",
-        ide = ide
-      )
-
       # observe last run ----
       observeEvent(ide$last_run, {
         ide$environment <- get_environment()
+        ide$environment_nrow <- nrow(ide$environment)
         ide$package <- get_packages()
       })
 
@@ -118,19 +108,33 @@ server_control_environment <- function(id="environment", ide){
 
       # reactive environment selections ----
       environment_selected <- shiny::reactive({
-        reactable::getReactableState("environment", "selected")
-      })
-      shiny::observeEvent(environment_selected(), {
-        ide$viewer <- NULL
-        ide$environment_selected <- tryCatch(
-          get(
-            ide$environment[["Object"]][environment_selected()],
-            envir = .GlobalEnv
-          ),
-          error = function(e) NULL
+        list(
+          index = reactable::getReactableState("environment", "selected"),
+          id = uuid::UUIDgenerate()
         )
-        if(!is.null(environment_selected())){
-          ide$environment_selected_index <- environment_selected()
+      })
+      shiny::observeEvent(environment_selected()[["id"]], {
+        if(!is.null(environment_selected()[["index"]])){
+          ide$environment_selected[["index"]] <- environment_selected()[["index"]]
+          ide$environment_selected[["id"]] <- environment_selected()[["id"]]
+          ide$environment_selected[["name"]] <- ide$environment[["Object"]][environment_selected()[["index"]]]
+          ide$environment_selected[["data"]] <- tryCatch(
+            get(
+              ide$environment_selected[["name"]],
+              envir = .GlobalEnv
+            ),
+            error = function(e) NULL
+          )
+        }else if(!is.null(environment_selected()[["name"]])){
+          ide$environment_selected[["index"]] <- environment_selected()[["index"]]
+          ide$environment_selected[["id"]] <- environment_selected()[["id"]]
+          ide$environment_selected[["data"]] <- tryCatch(
+            get(
+              ide$environment_selected[["name"]],
+              envir = .GlobalEnv
+            ),
+            error = function(e) NULL
+          )
         }
       }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
