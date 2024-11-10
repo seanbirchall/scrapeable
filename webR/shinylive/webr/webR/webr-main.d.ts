@@ -8,13 +8,14 @@ import { Message } from './chan/message';
 import { EmPtr } from './emscripten';
 import { newRClassProxy } from './proxy';
 import { RCharacter, RComplex, RDouble } from './robj-main';
-import { REnvironment, RSymbol, RInteger } from './robj-main';
-import { RList, RLogical, RNull, RObject, RPairlist, RRaw, RString, RCall } from './robj-main';
+import { REnvironment, RSymbol, RInteger, RList, RDataFrame } from './robj-main';
+import { RLogical, RNull, RObject, RPairlist, RRaw, RString, RCall } from './robj-main';
 import * as RWorker from './robj-worker';
 import { EvalROptions, InstallPackagesOptions } from './webr-chan';
 export { Console, ConsoleCallbacks } from './console';
 export * from './robj-main';
 export * from './error';
+export * from './webr-chan';
 export { ChannelType } from './chan/channel-common';
 /**
  * The webR FS API for interacting with the Emscripten Virtual File System.
@@ -74,7 +75,7 @@ export type FSNode = {
     };
 };
 /** An Emscripten Filesystem type */
-export type FSType = 'NODEFS' | 'WORKERFS';
+export type FSType = 'NODEFS' | 'WORKERFS' | 'IDBFS';
 /**
  * Configuration settings to be used when mounting Filesystem objects with
  * Emscripten
@@ -84,13 +85,24 @@ export type FSMountOptions<T extends FSType = FSType> = T extends 'NODEFS' ? {
 } : {
     blobs?: Array<{
         name: string;
-        data: Blob;
+        data: Blob | ArrayBufferLike;
     }>;
     files?: Array<File | FileList>;
     packages?: Array<{
-        metadata: any;
-        blob: Blob;
+        metadata: FSMetaData;
+        blob: Blob | ArrayBufferLike;
     }>;
+};
+/**
+ * Emscripten filesystem image metadata
+ */
+export type FSMetaData = {
+    files: {
+        filename: string;
+        start: number;
+        end: number;
+    }[];
+    gzip?: boolean;
 };
 /**
  * The configuration settings to be used when starting webR.
@@ -155,6 +167,7 @@ export interface WebROptions {
 export declare class WebR {
     #private;
     globalShelter: Shelter;
+    version: string;
     RObject: ReturnType<typeof newRClassProxy<typeof RWorker.RObject, RObject>>;
     RLogical: ReturnType<typeof newRClassProxy<typeof RWorker.RLogical, RLogical>>;
     RInteger: ReturnType<typeof newRClassProxy<typeof RWorker.RInteger, RInteger>>;
@@ -163,6 +176,7 @@ export declare class WebR {
     RComplex: ReturnType<typeof newRClassProxy<typeof RWorker.RComplex, RComplex>>;
     RRaw: ReturnType<typeof newRClassProxy<typeof RWorker.RRaw, RRaw>>;
     RList: ReturnType<typeof newRClassProxy<typeof RWorker.RList, RList>>;
+    RDataFrame: ReturnType<typeof newRClassProxy<typeof RWorker.RDataFrame, RDataFrame>>;
     RPairlist: ReturnType<typeof newRClassProxy<typeof RWorker.RPairlist, RPairlist>>;
     REnvironment: ReturnType<typeof newRClassProxy<typeof RWorker.REnvironment, REnvironment>>;
     RSymbol: ReturnType<typeof newRClassProxy<typeof RWorker.RSymbol, RSymbol>>;
@@ -213,12 +227,13 @@ export declare class WebR {
     /** Attempt to interrupt a running R computation. */
     interrupt(): void;
     /**
-     * Install a list of R packages from a Wasm binary package repo.
-     * @param {string[]} packages An array of R package names.
+     * Install a list of R packages from Wasm binary package repositories.
+     * @param {string | string[]} packages An string or array of strings
+     *   containing R package names.
      * @param {InstallPackagesOptions} [options] Options to be used when
      *   installing webR packages.
      */
-    installPackages(packages: string[], options?: InstallPackagesOptions): Promise<void>;
+    installPackages(packages: string | string[], options?: InstallPackagesOptions): Promise<void>;
     /**
      * Destroy an R object reference.
      * @param {RObject} x An R object reference.
@@ -257,6 +272,7 @@ export declare class WebR {
         lookupPath: (path: string) => Promise<FSNode>;
         mkdir: (path: string) => Promise<FSNode>;
         mount: <T extends FSType>(type: T, options: FSMountOptions<T>, mountpoint: string) => Promise<void>;
+        syncfs: (populate: boolean) => Promise<void>;
         readFile: (path: string, flags?: string) => Promise<Uint8Array>;
         rmdir: (path: string) => Promise<void>;
         writeFile: (path: string, data: ArrayBufferView, flags?: string) => Promise<void>;
@@ -275,6 +291,7 @@ export declare class Shelter {
     RComplex: ReturnType<typeof newRClassProxy<typeof RWorker.RComplex, RComplex>>;
     RRaw: ReturnType<typeof newRClassProxy<typeof RWorker.RRaw, RRaw>>;
     RList: ReturnType<typeof newRClassProxy<typeof RWorker.RList, RList>>;
+    RDataFrame: ReturnType<typeof newRClassProxy<typeof RWorker.RDataFrame, RDataFrame>>;
     RPairlist: ReturnType<typeof newRClassProxy<typeof RWorker.RPairlist, RPairlist>>;
     REnvironment: ReturnType<typeof newRClassProxy<typeof RWorker.REnvironment, REnvironment>>;
     RSymbol: ReturnType<typeof newRClassProxy<typeof RWorker.RSymbol, RSymbol>>;

@@ -5,6 +5,7 @@ import type { EvalROptions } from './webr-chan';
 import type { UnwindProtectException } from './utils-r';
 export interface Module extends EmscriptenModule {
     FS: typeof FS & {
+        _mount: typeof FS.mount;
         mkdirTree(path: string): void;
         filesystems: {
             [key: string]: Emscripten.FileSystemType;
@@ -25,7 +26,7 @@ export interface Module extends EmscriptenModule {
     noAudioDecoding: boolean;
     noWasmDecoding: boolean;
     setPrompt: (prompt: string) => void;
-    downloadFileContent: (URL: string, headers: Array<string>) => {
+    downloadFileContent: (URL: string, headers?: Array<string>) => {
         status: number;
         response: string | ArrayBuffer;
     };
@@ -132,6 +133,7 @@ export interface Module extends EmscriptenModule {
         readConsole: () => number;
         resolveInit: () => void;
         handleEvents: () => void;
+        dataViewer: (data: RPtr, title: string) => void;
         evalJs: (code: RPtr) => unknown;
         evalR: (expr: string | RObject, options?: EvalROptions) => RObject;
         captureR: (expr: string | RObject, options: EvalROptions) => {

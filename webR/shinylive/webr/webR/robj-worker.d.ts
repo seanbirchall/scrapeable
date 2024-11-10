@@ -1,5 +1,5 @@
 import { Complex, NamedEntries, NamedObject, WebRDataRaw, WebRDataScalar } from './robj';
-import { WebRData, WebRDataAtomic, RPtr, RType, RTypeNumber } from './robj';
+import { WebRData, WebRDataAtomic, RPtr, RType, RCtor } from './robj';
 import { WebRDataJs, WebRDataJsAtomic, WebRDataJsNode } from './robj';
 import { WebRDataJsNull, WebRDataJsString, WebRDataJsSymbol } from './robj';
 import { EvalROptions, ShelterID } from './webr-chan';
@@ -32,6 +32,7 @@ export declare class RObject extends RObjectBase {
     isNa(): boolean;
     isUnbound(): boolean;
     attrs(): Nullable<RPairlist>;
+    class(): RCharacter;
     setNames(values: (string | null)[] | null): this;
     names(): (string | null)[] | null;
     includes(name: string): boolean | null;
@@ -92,9 +93,9 @@ export declare class RCall extends RObject {
     deparse(): string;
 }
 export declare class RList extends RObject {
-    isDataFrame: boolean;
-    constructor(val: WebRData);
+    constructor(val: WebRData, names?: (string | null)[] | null);
     get length(): number;
+    isDataFrame(): boolean;
     toArray(options?: {
         depth: number;
     }): WebRData[];
@@ -104,16 +105,19 @@ export declare class RList extends RObject {
         depth?: number | undefined;
     }): NamedObject<WebRData>;
     toD3(): NamedObject<WebRData>[];
-    static fromObject(obj: WebRData): RObject;
-    static fromD3(arr: {
-        [key: string]: WebRData;
-    }[]): RObject;
     entries(options?: {
         depth: number;
     }): NamedEntries<WebRData>;
     toJs(options?: {
         depth: number;
     }, depth?: number): WebRDataJsNode;
+}
+export declare class RDataFrame extends RList {
+    constructor(val: WebRData);
+    static fromObject(obj: WebRData): RDataFrame;
+    static fromD3(arr: {
+        [key: string]: WebRData;
+    }[]): RDataFrame;
 }
 export declare class RFunction extends RObject {
     exec(...args: (WebRDataRaw | RObject)[]): RObject;
@@ -205,7 +209,7 @@ export declare class RRaw extends RVectorAtomic<number> {
     toNumber(): number;
     toTypedArray(): Uint8Array;
 }
-export declare function getRWorkerClass(type: RTypeNumber): typeof RObject;
+export declare function getRWorkerClass(type: RType | RCtor): typeof RObject;
 /**
  * Test for an RWorker.RObject instance.
  *
