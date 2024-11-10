@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /documents/scrapeable/
+cd /root/documents/scrapeable/
 git pull origin main
