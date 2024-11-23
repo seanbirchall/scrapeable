@@ -84,11 +84,7 @@ server_editor <- function(id="editor", ide){
         ide$last_run <- input$ace
         viewer <- run[["viewer"]]
         if(!is.null(viewer)){
-          ide$show_df_viewer <- FALSE
           ide$viewer <- viewer
-        }
-        if(is.null(viewer) & !ide$show_df_viewer & ide$tab_control == "viewer"){
-          shinyjs::click("control-tab_environment", asis = TRUE)
         }
         shinyjs::removeClass("run", class = "disabled")
       }, ignoreInit = TRUE)
@@ -108,11 +104,7 @@ server_editor <- function(id="editor", ide){
         ide$last_run <- input$ace_selection
         viewer <- run[["viewer"]]
         if(!is.null(viewer)){
-          ide$show_df_viewer <- FALSE
           ide$viewer <- viewer
-        }
-        if(is.null(viewer) & !ide$show_df_viewer & ide$tab_control == "viewer"){
-          shinyjs::click("control-tab_environment", asis = TRUE)
         }
         shinyjs::removeClass("run", class = "disabled")
       }, ignoreInit = TRUE)

@@ -3,6 +3,7 @@ ui_control_environment <- function(id="environment"){
 
   shiny::tagList(
     shiny::fluidRow(
+      id = ns("container"),
       class = "m-0",
       shiny::column(
         width = 12,
@@ -45,8 +46,10 @@ server_control_environment <- function(id="environment", ide){
     function(input, output, session){
       ns <- session$ns
 
-      # on-load defaults ----
-      ide$environment_selected_index <- NULL
+      # show ----
+      observeEvent(ide$tab_control, {
+        shinyjs::toggle(id = "container", time = 0, condition = ide$tab_control == "environment")
+      })
 
       # observe last run ----
       observeEvent(ide$last_run, {

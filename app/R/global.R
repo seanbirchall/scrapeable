@@ -138,6 +138,8 @@ with(scrapeable, {
     if(!is_character(obj)){
       obj <- deparse(substitute(obj))
     }
+    shinyjs::delay(1, shinyjs::click(id = "control-tab_viewer", asis = TRUE))
+    shinyjs::delay(1, shinyjs::click(id = "control-viewer-show", asis = TRUE))
     session$sendCustomMessage(
       "view",
       list(
