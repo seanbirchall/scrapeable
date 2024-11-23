@@ -1,25 +1,27 @@
 ui_control_viewer_df <- function(id="df_viewer"){
   ns <- shiny::NS(id)
 
-  shiny::tagList(
-    bslib::card(
-      id = ns("view"),
-      fill = TRUE,
-      full_screen = FALSE,
-      style = "height: 100vh;",
-      bslib::card_header(
-        style = "padding: 0px; margin: 0px; gap: 0px; height: 24px;",
-        uiOutput(
-          outputId = ns("toolbar"),
-          class = "header-div-card-left2"
-        )
-      ),
-      bslib::card_body(
-        style = "padding:0px;",
-        fillable = TRUE,
+  shinyjs::hidden(
+    shiny::tagList(
+      bslib::card(
+        id = ns("container"),
         fill = TRUE,
-        dfViewerOutput(
-          outputId = ns("spreadsheet")
+        full_screen = FALSE,
+        style = "height: 100vh;",
+        bslib::card_header(
+          style = "padding: 0px; margin: 0px; gap: 0px; height: 24px;",
+          uiOutput(
+            outputId = ns("toolbar"),
+            class = "header-div-card-left2"
+          )
+        ),
+        bslib::card_body(
+          style = "padding:0px;",
+          fillable = TRUE,
+          fill = TRUE,
+          dfViewerOutput(
+            outputId = ns("spreadsheet")
+          )
         )
       )
     )
@@ -33,6 +35,16 @@ server_control_viewer_df <- function(id="df_viewer", ide){
     id,
     function(input, output, session){
       ns <- session$ns
+
+      # show ----
+      observeEvent(ide$viewer_window, {
+        shinyjs::toggle(id = "container", time = 0, condition = ide$viewer_window[["type"]] == "df_viewer")
+      })
+
+      # hide ----
+      observeEvent(ide$viewer_clear, {
+        shinyjs::hide(id = "container", time = 0)
+      })
 
       # toolbar ----
       output$toolbar <- shiny::renderUI({

@@ -17,7 +17,7 @@ ui_control <- function(id="control"){
             shiny::fluidRow(
               class = "m-0",
               shiny::column(
-                width = 6,
+                width = 12,
                 align = "left",
                 style = "padding: 0px;",
                 shiny::tags$div(
@@ -33,48 +33,25 @@ ui_control <- function(id="control"){
                     style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid #f2f2f2; background-color: #eee; color: black; font-weight: 600;"
                   )
                 )
-              ),
-              shiny::column(
-                width = 6,
-                align = "right",
-                style = "padding: 0px;",
-                shiny::tags$div(
-                  style = "display: flex; align-items: center; justify-content: flex-end;",
-                  shiny::actionButton(
-                    inputId = "deploy",
-                    label = "Deploy",
-                    style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid #eee; background-color: #eee; color: black;",
-                    icon = shiny::icon(
-                      "cloud-arrow-up"
-                    )
-                  ) |>
-                    bslib::tooltip("Cloud Deploy", placement = "bottom"),
-                  shiny::actionButton(
-                    inputId = "share",
-                    label = "Share",
-                    style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid #eee; background-color: #eee; color: black;",
-                    icon = shiny::icon(
-                      "share-nodes"
-                    )
-                  ) |>
-                    bslib::tooltip("Create Link", placement = "bottom")
-                )
               )
             )
           ),
           bslib::card_body(
             style = "padding: 0px; margin: 0px;",
             height = "100%",
-            shiny::uiOutput(ns("control")),
-            shinyjs::hidden(
-              shiny::tags$div(id = ns("object_viewer"))
+            # shiny::uiOutput(ns("control"))
+            ui_control_environment(
+              id = ns("environment")
+            ),
+            ui_control_viewer(
+              id = ns("viewer"),
+              fill = TRUE
             )
           )
         )
       )
     )
   )
-
 }
 
 server_control <- function(id="control", ide){
@@ -98,28 +75,10 @@ server_control <- function(id="control", ide){
 
       # observe control tabs ----
       shiny::observeEvent(input$tab_environment, {
-        if(ide$show_df_viewer){
-          # ide$viewer <- NULL
-        }
         ide$tab_control <- "environment"
       })
       shiny::observeEvent(input$tab_viewer, {
         ide$tab_control <- "viewer"
-      })
-
-      # ui outputs ----
-      output$control <- shiny::renderUI({
-        if(ide$tab_control == "environment"){
-          ui_control_environment(
-            id = ns("environment")
-          )
-        }else if(ide$tab_control == "viewer"){
-          ui_control_viewer(
-            id = ns("viewer"),
-            fill = TRUE
-            # fill = ide$show_df_viewer
-          )
-        }
       })
     }
   )

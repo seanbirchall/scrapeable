@@ -49,43 +49,8 @@ ui <- bslib::page(
     fill = TRUE,
     bslib::card_header(
       class = "header-search",
-      shiny::tags$div(
-        class = "header-search-container-left"
-      ),
-      shiny::tags$div(
-        class = "header-search-container-center",
-        shiny::selectizeInput(
-          inputId = "search",
-          label = NULL,
-          width = "100%",
-          multiple = TRUE,
-          choices = NULL,
-          options = list(
-            # valueField = "id",
-            # labelField = "label",
-            # searchField = c("id", "name", "description", "tag"),
-            placeholder = "🔍 Search for code snippets.... (coming soon!)",
-            maxOptions = 10,
-            maxItems = 1,
-            create = TRUE
-          )
-        ) |>
-          htmltools::tagAppendAttributes(class = "header-search-selectize")
-      ),
-      shiny::tags$div(
-        class = "header-search-container-right",
-        shiny::uiOutput(
-          outputId = "logged_in"
-        ),
-        shiny::actionButton(
-          inputId = "login",
-          label = NULL,
-          icon = shiny::icon(
-            "user"
-          ),
-          class = "button-login"
-        ) |>
-          bslib::tooltip("Login / Sign Up", placement = "bottom")
+      ui_header(
+        id = "header"
       )
     ),
     bslib::layout_sidebar(
@@ -185,6 +150,10 @@ server <- function(input, output, session) {
   )
 
   # sub-modules ----
+  server_header(
+    id = "header",
+    ide = ide
+  )
   server_sidebar(
     id = "sidebar",
     ide = ide
@@ -205,11 +174,6 @@ server <- function(input, output, session) {
     id = "control",
     ide = ide
   )
-
-  # events ----
-  observeEvent(input$login, {
-    ide$show_login <- ide$show_login + 1
-  })
 
   # extension ----
   observeEvent(ide$tab_selected, {
@@ -359,74 +323,12 @@ server <- function(input, output, session) {
     session$userData$authentication <- input$idToken
   })
 
-  # observe share link ----
-  shiny::observeEvent(input$share, {
-    if(!is.null(session$userData$authentication)){
-      ## share notification ----
-      show_notification(
-        type = "loading",
-        msg = "Preparing Share Link",
-        duration = 5,
-        id = "notification_share"
-      )
-      ## share tabs ----
-      ide$tabs[[ide$tab_selected]][["code"]] <- input[["editor-ace"]]
-      tabs <- ide$tabs
-      tabs <- jsonlite::base64url_enc(
-        serialize(
-          object = tabs,
-          connection = NULL
-        )
-      )
-      ## check new code ----
-      if(!identical(tabs, ide$last_tabs)){
-        ide$last_tabs <- tabs
-        id <- uuid::UUIDgenerate()
-        ide$last_id <- id
-        payload <- list(
-          code = tabs,
-          id = id
-        )
-      }else{
-        id <- ide$last_id
-        payload <- NULL
-        if(ide$code_received > 0){
-          ide$code_received <- as.integer(Sys.time())
-        }else{
-          ide$code_received <- -as.integer(Sys.time())
-        }
-      }
-      ## send payload if not null ----
-      if(!is.null(payload)){
-        session$sendCustomMessage(
-          type = "put_code",
-          message = list(
-            payload = payload,
-            token = session$userData$authentication
-          )
-        )
-      }
-    }else{
-      ## unauthenticated share ----
-      shinyjs::click("login")
-      shiny::removeNotification(
-        id = "notification_login",
-      )
-      show_notification(
-        type = "error",
-        msg = "Please Login to Share",
-        duration = 5,
-        id = "notification_login"
-      )
-    }
-  })
-
   # successful share code ----
   shiny::observeEvent(input$code_received, {
     ide$code_received <- as.numeric(input$code_received)
   })
   shiny::observeEvent(ide$code_received, {
-    if(ide$code_received > 0){
+    if(length(ide$code_received) > 0){
       show_notification(
         type = "success",
         msg = "Share Link Ready!",
@@ -514,6 +416,8 @@ server <- function(input, output, session) {
       error = function(e) NULL
     )
     ide$evals <- evals
+    ide$viewer_window[["type"]] <- "df_viewer"
+    ide$viewer_window[["id"]] <- uuid::UUIDgenerate()
   })
 
   # view shim ----
