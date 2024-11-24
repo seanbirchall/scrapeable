@@ -28,12 +28,22 @@ function verifySignature(req) {
 // Function to execute shell script
 function runScript() {
     return new Promise((resolve, reject) => {
-        exec('/var/www/html/scrapeable/deploy.sh', (error, stdout, stderr) => {
+        // Run the command with sudo explicitly
+        const command = 'sudo -u sean /bin/bash /var/www/html/scrapeable/deploy.sh';
+        
+        console.log('Executing command:', command);
+        
+        exec(command, {
+            shell: true,
+            cwd: '/var/www/html/scrapeable',
+        }, (error, stdout, stderr) => {
             if (error) {
                 console.error('Error executing script:', error);
+                console.error('Stderr:', stderr);
                 reject(error);
                 return;
             }
+            console.log('Script output:', stdout);
             resolve(stdout);
         });
     });
