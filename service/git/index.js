@@ -18,7 +18,6 @@ function verifySignature(req) {
     }
     // prepare the payload for signature comparison
     const payload = JSON.stringify(req.body);
-    // compute the HMAC using your secret key (stored in environment variables)
     const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
     hmac.update(payload);
     const computedSignature = `sha256=${hmac.digest('hex')}`;
