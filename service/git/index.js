@@ -1,13 +1,23 @@
-// app.js
 const express = require('express');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 const app = express();
 
-// middleware to parse JSON bodies
+// Middleware to capture raw body
+app.use((req, res, next) => {
+    req.rawBody = '';
+    req.on('data', (chunk) => {
+        req.rawBody += chunk;
+    });
+    req.on('end', () => {
+        next();
+    });
+});
+
+// Middleware to parse JSON bodies (required after raw body middleware)
 app.use(express.json());
 
-// function to compute HMAC and compare the signature
+// Function to compute HMAC and compare the signature
 function verifySignature(req) {
     const signature = req.headers['x-hub-signature-256'];
     console.log('received: ', signature);
@@ -17,17 +27,21 @@ function verifySignature(req) {
         return false;
     }
 
-    // Compute the HMAC signature
-    const payload = req.body.toString(); // Ensure raw body is used
-    const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
-    hmac.update(payload);
-    const computedSignature = `sha256=${hmac.digest('hex')}`;
-    console.log('computed: ', computedSignature);
-
-    return signature === computedSignature;
+    try {
+        // Compute the HMAC signature using raw body
+        const payload = req.rawBody; // Raw body is captured in middleware
+        const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
+        hmac.update(payload);
+        const computedSignature = `sha256=${hmac.digest('hex')}`;
+        console.log('computed: ', computedSignature);
+        return signature === computedSignature;
+    } catch (error) {
+        console.error('Error computing signature:', error);
+        return false;
+    }
 }
 
-// execute shell script
+// Function to execute shell script
 function runScript() {
     return new Promise((resolve, reject) => {
         exec('/var/www/html/scrapeable/deploy.sh', (error, stdout, stderr) => {
@@ -36,21 +50,23 @@ function runScript() {
                 reject(error);
                 return;
             }
+            console.log('Script output:', stdout);
             resolve(stdout);
         });
     });
 }
 
-// webook endpoint
+// Webhook endpoint
 app.post('/webhook', async (req, res) => {
     try {
         if (!verifySignature(req)) {
             console.error('Invalid GitHub signature');
             return res.status(401).send('Unauthorized');
         }
-        const payload = JSON.parse(req.body.toString());
-        // Check the branch
+
+        const payload = JSON.parse(req.rawBody); // Use raw body for parsing
         const branch = payload.ref;
+
         if (branch !== 'refs/heads/main') {
             console.log(`Ignoring changes from branch: ${branch}`);
             return res.status(200).send('Ignored non-main branch changes');
@@ -65,6 +81,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
+// Start the server
 app.listen(3000, () => {
-    console.log(`git service running`);
+    console.log(`git service running on port 3000`);
 });
