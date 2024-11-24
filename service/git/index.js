@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 const app = express();
 
-// middleware to parse JSON bodies 
+// middleware to parse JSON bodies  
 app.use(express.json());
 
 // function to compute HMAC and compare the signature
