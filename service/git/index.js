@@ -11,6 +11,7 @@ app.use(express.json());
 function verifySignature(req) {
     // grab the signature from the request header
     const signature = req.headers['x-hub-signature-256'];
+    console.log('received: ', signature);
     // ensure there's a signature
     if (!signature) {
         console.error('No signature received');
@@ -21,6 +22,7 @@ function verifySignature(req) {
     const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
     hmac.update(payload);
     const computedSignature = `sha256=${hmac.digest('hex')}`;
+    console.log('computed: ', computedSignature);
     return signature === computedSignature;
 }
 
