@@ -23,7 +23,6 @@ function verifySignature(req) {
     hmac.update(payload);
     const computedSignature = `sha256=${hmac.digest('hex')}`;
     console.log('computed: ', computedSignature);
-
     return signature === computedSignature;
 }
 
