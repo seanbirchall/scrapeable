@@ -28,6 +28,9 @@ ui <- bslib::page(
     shiny::tags$script(
       type = "text/javascript", src = "view.js"
     ),
+    shiny::tags$script(
+      type = "text/javascript", src = "dropdown.js"
+    ),
     shiny::tags$link(
       rel = "stylesheet", type = "text/css", href = "style.css"
     ),
