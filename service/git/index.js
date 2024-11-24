@@ -3,42 +3,26 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 const app = express();
 
-// Middleware to capture raw body
-app.use((req, res, next) => {
-    req.rawBody = '';
-    req.on('data', (chunk) => {
-        req.rawBody += chunk;
-    });
-    req.on('end', () => {
-        next();
-    });
-});
-
-// Middleware to parse JSON bodies (required after raw body middleware)
+// Use JSON parser for incoming payloads
 app.use(express.json());
 
 // Function to compute HMAC and compare the signature
 function verifySignature(req) {
     const signature = req.headers['x-hub-signature-256'];
-    console.log('received: ', signature);
+    console.log('Received signature: ', signature);
 
     if (!signature) {
         console.error('No signature received');
         return false;
     }
 
-    try {
-        // Compute the HMAC signature using raw body
-        const payload = req.rawBody; // Raw body is captured in middleware
-        const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
-        hmac.update(payload);
-        const computedSignature = `sha256=${hmac.digest('hex')}`;
-        console.log('computed: ', computedSignature);
-        return signature === computedSignature;
-    } catch (error) {
-        console.error('Error computing signature:', error);
-        return false;
-    }
+    // Compute the HMAC signature
+    const payload = JSON.stringify(req.body); // Ensure body is parsed as JSON string
+    const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
+    hmac.update(payload);
+    const computedSignature = `sha256=${hmac.digest('hex')}`;
+    console.log('Computed signature: ', computedSignature);
+    return signature === computedSignature;
 }
 
 // Function to execute shell script
@@ -50,7 +34,6 @@ function runScript() {
                 reject(error);
                 return;
             }
-            console.log('Script output:', stdout);
             resolve(stdout);
         });
     });
@@ -64,9 +47,10 @@ app.post('/webhook', async (req, res) => {
             return res.status(401).send('Unauthorized');
         }
 
-        const payload = JSON.parse(req.rawBody); // Use raw body for parsing
-        const branch = payload.ref;
+        console.log('Payload:', req.body);
 
+        // Check the branch
+        const branch = req.body.ref;
         if (branch !== 'refs/heads/main') {
             console.log(`Ignoring changes from branch: ${branch}`);
             return res.status(200).send('Ignored non-main branch changes');
@@ -81,7 +65,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-// Start the server
+// Start server
 app.listen(3000, () => {
-    console.log(`git service running on port 3000`);
+    console.log('GitHub webhook service running on port 3000');
 });
