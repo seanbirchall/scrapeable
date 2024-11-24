@@ -14,7 +14,7 @@ app.use((req, res, next) => {
     });
 });
 
-// Middleware to parse JSON bodies (required after raw body middleware)
+// Middleware to parse JSON bodies (required after raw body middleware) 
 app.use(express.json());
 
 // Function to compute HMAC and compare the signature
