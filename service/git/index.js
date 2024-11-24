@@ -6,7 +6,7 @@ const app = express();
 // Use JSON parser for incoming payload
 app.use(express.json());
 
-// Function to compute HMAC and compare the signature 
+// Function to compute HMAC and compare the signature
 function verifySignature(req) {
     const signature = req.headers['x-hub-signature-256'];
     console.log('Received signature: ', signature);
