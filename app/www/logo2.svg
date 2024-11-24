@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100">
+  <!-- Outer black hexagon -->
+  <path d="M 40,0 L 20,34.64 L -20,34.64 L -40,0 L -20,-34.64 L 20,-34.64 Z" fill="#000000"/>
+  
+  <!-- Middle white hexagon (made smaller) -->
+  <path d="M 27,0 L 13.5,23.38 L -13.5,23.38 L -27,0 L -13.5,-23.38 L 13.5,-23.38 Z" fill="#FFFFFF"/>
+  
+  <!-- Inner black hexagon (made larger) -->
+  <path d="M 23,0 L 11.5,19.92 L -11.5,19.92 L -23,0 L -11.5,-19.92 L 11.5,-19.92 Z" fill="#000000"/>
+</svg>

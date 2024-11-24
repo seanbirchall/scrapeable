@@ -3,7 +3,47 @@ ui_header <- function(id){
 
   shiny::tagList(
     shiny::tags$div(
-      class = "header-search-container-left"
+      class = "header-search-container-left",
+      shiny::tags$img(
+        src = "logo2.svg",
+        height = "24px",
+        width = "24px"
+      ),
+      shiny::tags$div(
+        class = "dropdown",
+        id = "fileDropdown",
+        onmouseover = "this.style.backgroundColor='#eee'",
+        onmouseout = "this.style.backgroundColor='rgb(246, 247, 249)'",
+        shiny::tags$a(
+          "File",
+          class = "dropdown-button",
+          onclick = "toggleDropdown(event)"
+        ),
+        shiny::tags$div(
+          id = "fileDropdownContent",
+          class = "dropdown-content",
+          shiny::tags$a(
+            "New File +",
+            class = "dropdown-content-item",
+            onclick = "handleMenuClick('newFile')"
+          ),
+          shiny::tags$a(
+            "New Project +",
+            class = "dropdown-content-item",
+            onclick = "handleMenuClick('newProject')"
+          ),
+          shiny::tags$a(
+            "Load Project",
+            class = "dropdown-content-item",
+            onclick = "handleMenuClick('loadProject')"
+          ),
+          shiny::tags$a(
+            "Shortcuts",
+            class = "dropdown-content-item",
+            onclick = "handleMenuClick('shortcuts')"
+          )
+        )
+      )
     ),
     shiny::tags$div(
       class = "header-search-container-center"
@@ -30,10 +70,12 @@ ui_header <- function(id){
       shiny::actionButton(
         inputId = ns("deploy"),
         label = "Deploy",
-        style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid rgb(246, 247, 249); background-color: rgb(246, 247, 249); color: black;",
+        style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid rgb(246, 247, 249); background-color: rgb(246, 247, 249); color: black; margin-left: 5px;",
         icon = shiny::icon(
           "cloud-arrow-up"
-        )
+        ),
+        onmouseover = "this.style.backgroundColor='#eee'",
+        onmouseout = "this.style.backgroundColor='rgb(246, 247, 249)'"
       ) |>
         bslib::tooltip("Cloud Deploy", placement = "bottom"),
       shiny::actionButton(
@@ -42,7 +84,9 @@ ui_header <- function(id){
         style = "width: 80px; font-size: 12px; padding: 0px; border: 1px solid rgb(246, 247, 249); background-color: rgb(246, 247, 249); color: black;",
         icon = shiny::icon(
           "share-nodes"
-        )
+        ),
+        onmouseover = "this.style.backgroundColor='#eee'",
+        onmouseout = "this.style.backgroundColor='rgb(246, 247, 249)'"
       ) |>
         bslib::tooltip("Create Link", placement = "bottom"),
       shiny::actionButton(
