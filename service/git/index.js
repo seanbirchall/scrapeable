@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 const app = express();
 
-// Use JSON parser for incoming payloads
+// Use JSON parser for incoming payload
 app.use(express.json());
 
 // Function to compute HMAC and compare the signature
