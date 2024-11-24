@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 const app = express();
 
-// Use JSON parser for incoming payloads
+// Use JSON parser for incoming payload
 app.use(express.json());
 
 // Function to compute HMAC and compare the signature
@@ -21,7 +21,7 @@ function verifySignature(req) {
     const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_TOKEN);
     hmac.update(payload);
     const computedSignature = `sha256=${hmac.digest('hex')}`;
-    console.log('Computed signature: ', computedSignature);
+    // console.log('Computed signature: ', computedSignature);
     return signature === computedSignature;
 }
 
@@ -47,7 +47,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(401).send('Unauthorized');
         }
 
-        console.log('Payload:', req.body);
+        // console.log('Payload:', req.body);
 
         // Check the branch
         const branch = req.body.ref;
