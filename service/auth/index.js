@@ -9,7 +9,7 @@ app.use(cookieParser());
 app.get('/callback', async (req, res) => {
     const { code } = req.query; // Get the authorization code from the redirect
     if (!code) {
-        console.log('no auth code found');
+        console.log('no auth code');
         return res.status(400).send('Authorization code is missing');
     }
 
