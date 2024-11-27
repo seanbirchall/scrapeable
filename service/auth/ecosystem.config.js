@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: "auth-authentication",
     script: "index.js",
-    cwd: "/var/www/html/scrapeable/service/git",
+    cwd: "/var/www/html/scrapeable/service/auth",
     env: {
       NODE_ENV: "production"
     },
