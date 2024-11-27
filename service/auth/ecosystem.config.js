@@ -14,7 +14,7 @@ module.exports = {
       ".git",
       "*.log"
     ],
-    max_memory_restart: '200M',
+    max_memory_restart: '750M',
     exp_backoff_restart_delay: 100,
     time: true
   }]
