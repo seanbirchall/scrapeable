@@ -104,6 +104,7 @@ app.get('/refresh', async (req, res) => {
             maxAge: 3600 * 1000, // 1 hour
         });
 
+        return res.status(200).send('Refreshed');
     } catch (error) {
         // Refresh token is invalid or expired
         res.clearCookie('access_token');
