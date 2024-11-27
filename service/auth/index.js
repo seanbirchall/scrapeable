@@ -77,6 +77,10 @@ app.get('/logout', async (req, res) => {
 app.get('/refresh', async (req, res) => {
     const refreshToken = req.cookies.refresh_token;
 
+    if(!refreshToken){
+        return res.status(400).send('Nothing to refresh');
+    }
+
     try {
         // Attempt to get a new access token using the refresh token
         const response = await axios.post(
@@ -104,6 +108,7 @@ app.get('/refresh', async (req, res) => {
         // Refresh token is invalid or expired
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
+        return res.status(400).send('Nothing to refresh');
     }
 });
 
