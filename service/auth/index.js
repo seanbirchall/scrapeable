@@ -1,137 +1,113 @@
-// app.js
-require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
-const cookieParser = require('cookie-parser');
-
+const cookieParser = require('cookie-parser'); // Optional, for parsing cookies
+const axios = require('axios'); // For making requests to Cognito
 const app = express();
+
 app.use(cookieParser());
 
-// AWS Cognito Config
-const config = {
-    COGNITO_DOMAIN: process.env.COGNITO_DOMAIN,
-    CLIENT_ID: process.env.CLIENT_ID,
-    CLIENT_SECRET: process.env.CLIENT_SECRET,
-    REDIRECT_URI: process.env.REDIRECT_URI,
-    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || 'localhost',
-    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000'
-};
-
-// Cookie configuration
-const cookieConfig = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // true in production
-    sameSite: 'lax',
-    domain: config.COOKIE_DOMAIN,
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-};
-
-// Exchange authorization code for tokens
-async function getTokensFromCode(code) {
-    const params = new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: config.CLIENT_ID,
-        client_secret: config.CLIENT_SECRET,
-        code: code,
-        redirect_uri: config.REDIRECT_URI
-    });
+// Redirect endpoint
+app.get('/callback', async (req, res) => {
+    const { code } = req.query; // Get the authorization code from the redirect
+    if (!code) {
+        console.log('no auth code');
+        return res.status(400).send('Authorization code is missing');
+    }
 
     try {
+        // Exchange the authorization code for tokens
         const response = await axios.post(
-            `${config.COGNITO_DOMAIN}/oauth2/token`,
-            params.toString(),
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }
+            process.env.COGNITO_TOKEN_URL,
+            new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: process.env.COGNITO_CLIENT_ID,
+                client_secret: process.env.COGNITO_CLIENT_SECRET,
+                code,
+                redirect_uri: 'https://reprex.org/auth/redirect',
+            }),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
 
-        return response.data;
+        const { access_token, refresh_token } = response.data;
+
+        if (!access_token) {
+            console.warn('access token is missing');
+        }
+        if (!refresh_token) {
+            console.warn('refresh token is missing');
+        }
+
+        if(access_token) {
+            res.cookie('access_token', access_token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'Strict',
+                maxAge: 3600 * 1000, // 1 hour
+            });
+        }
+        if(refresh_token) {
+            res.cookie('refresh_token', refresh_token, {
+                httpOnly: true,
+                secure: true, // Use true in production
+                sameSite: 'Strict',
+                maxAge: 5 * 24 * 3600 * 1000, // 7 days
+            });
+        }
+
+        // redirect to reprex ide
+        res.redirect('/index.html');
     } catch (error) {
-        console.error('Error exchanging code for tokens:', error.response?.data || error.message);
-        throw error;
+        console.error('error exchanging code for tokens:', error.response?.data || error.message);
+        res.status(500).send('Authentication failed');
     }
-}
+});
 
-// Refresh token endpoint
-app.post('/auth/refresh', async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
+app.get('/logout', async (req, res) => {
+    // Clear cookies
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
 
-    if (!refreshToken) {
-        return res.status(401).json({ error: 'No refresh token found' });
-    }
+    // Redirect to Cognito logout
+    const logoutUrl = `${process.env.COGNITO_DOMAIN}/logout?` +
+        `client_id=${process.env.COGNITO_CLIENT_ID}&` +
+        `logout_uri=${encodeURIComponent('https://reprex.org')}`;
+    
+    res.redirect(logoutUrl);
+});
+
+app.get('/refresh', async (req, res) => {
+    const refreshToken = req.cookies.refresh_token;
 
     try {
-        const params = new URLSearchParams({
-            grant_type: 'refresh_token',
-            client_id: config.CLIENT_ID,
-            client_secret: config.CLIENT_SECRET,
-            refresh_token: refreshToken
-        });
-
+        // Attempt to get a new access token using the refresh token
         const response = await axios.post(
-            `${config.COGNITO_DOMAIN}/oauth2/token`,
-            params.toString(),
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }
+            process.env.COGNITO_TOKEN_URL,
+            new URLSearchParams({
+                grant_type: 'refresh_token',
+                client_id: process.env.COGNITO_CLIENT_ID,
+                client_secret: process.env.COGNITO_CLIENT_SECRET,
+                refresh_token: refreshToken
+            }),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
+
+        const { access_token } = response.data;
 
         // Set new access token cookie
-        res.cookie('accessToken', response.data.access_token, cookieConfig);
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error refreshing token:', error.response?.data || error.message);
-        res.clearCookie('accessToken', cookieConfig);
-        res.clearCookie('refreshToken', cookieConfig);
-        res.status(401).json({ error: 'Failed to refresh token' });
-    }
-});
-
-// Callback endpoint
-app.get('/auth/callback', async (req, res) => {
-    const { code, error } = req.query;
-
-    if (error) {
-        console.error('OAuth error:', error);
-        return res.redirect(`${config.FRONTEND_URL}/login?error=${error}`);
-    }
-
-    try {
-        const tokens = await getTokensFromCode(code);
-
-        // Set cookies
-        res.cookie('accessToken', tokens.access_token, cookieConfig);
-        res.cookie('refreshToken', tokens.refresh_token, {
-            ...cookieConfig,
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days for refresh token
+        res.cookie('access_token', access_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: 3600 * 1000, // 1 hour
         });
 
-        // Redirect to frontend
-        res.redirect(config.FRONTEND_URL);
     } catch (error) {
-        console.error('Callback error:', error);
-        res.redirect(`${config.FRONTEND_URL}/login?error=callback_failed`);
+        // Refresh token is invalid or expired
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
     }
 });
 
-// Logout endpoint
-app.post('/auth/logout', (req, res) => {
-    res.clearCookie('accessToken', cookieConfig);
-    res.clearCookie('refreshToken', cookieConfig);
-    res.json({ success: true });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ status: 'healthy' });
-});
-
-app.listen(4000, () => {
-    console.log(`Auth server running on port 4000`);
+// Start the server
+app.listen(3001, () => {
+    console.log('auth service is running on 3001');
 });

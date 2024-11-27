@@ -77,5 +77,5 @@ app.post('/webhook', async (req, res) => {
 
 // Start server
 app.listen(3000, () => {
-    console.log('GitHub webhook service running on port 3000');
+    console.log('git service is running on port 3000');
 });
