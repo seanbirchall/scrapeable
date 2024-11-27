@@ -54,7 +54,7 @@ app.get('/callback', async (req, res) => {
         }
 
         // redirect to reprex ide
-        res.redirect('/index.html');
+        res.redirect('https://reprex.org');
     } catch (error) {
         console.error('error exchanging code for tokens:', error.response?.data || error.message);
         res.status(500).send('Authentication failed');
