@@ -20,7 +20,7 @@ app.get('/callback', async (req, res) => {
             new URLSearchParams({
                 grant_type: 'authorization_code',
                 client_id: process.env.COGNITO_CLIENT_ID,
-                // client_secret: process.env.COGNITO_CLIENT_SECRET,
+                client_secret: process.env.COGNITO_CLIENT_SECRET,
                 code,
                 redirect_uri: 'https://reprex.org/auth/callback',
             }),
