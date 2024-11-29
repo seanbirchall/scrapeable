@@ -26,9 +26,6 @@ app.get('/callback', async (req, res) => {
 
     try {
         // Exchange the authorization code for tokens
-        console.log(process.env.COGNITO_TOKEN_URL);
-        console.log(process.env.COGNITO_CLIENT_ID);
-        console.log(process.env.COGNITO_CLIENT_SECRET);
         const response = await axios.post(
             process.env.COGNITO_TOKEN_URL,
             new URLSearchParams({
