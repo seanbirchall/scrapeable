@@ -3,6 +3,7 @@
     "crypto": "^1.0.1",
     "exec": "^0.2.1",
     "express": "^4.21.1",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
   }
 }

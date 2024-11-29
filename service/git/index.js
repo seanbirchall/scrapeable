@@ -1,7 +1,17 @@
 const express = require('express');
 const crypto = require('crypto');
 const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const app = express();
+
+const configPath = '/etc/scrapeable/config/cognito.json';
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Set environment variables from config
+Object.entries(config).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
 
 // Use JSON parser for incoming payload
 app.use(express.json());
@@ -77,5 +87,5 @@ app.post('/webhook', async (req, res) => {
 
 // Start server
 app.listen(3002, () => {
-    console.log('git service is running on port 3000');
+    console.log('git service is running on port 3002');
 });
