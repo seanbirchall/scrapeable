@@ -4,7 +4,10 @@ module.exports = {
     script: "index.js",
     cwd: "/var/www/html/scrapeable/service/auth",
     env: {
-      NODE_ENV: "production"
+      NODE_ENV: "production",
+      COGNITO_TOKEN_URL: process.env.COGNITO_TOKEN_URL,
+      COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
+      COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET
     },
     watch: true,
     watch_delay: 1000,        // Delay between restarts
