@@ -1,8 +1,19 @@
 const express = require('express');
-const cookieParser = require('cookie-parser'); // Optional, for parsing cookies
-const axios = require('axios'); // For making requests to Cognito
-const app = express();
+const cookieParser = require('cookie-parser');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
+// Load configuration
+const configPath = '/etc/scrapeable/config/cognito.json';
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Set environment variables from config
+Object.entries(config).forEach(([key, value]) => {
+  process.env[key] = value;
+});
+
+const app = express();
 app.use(cookieParser());
 
 // Redirect endpoint
