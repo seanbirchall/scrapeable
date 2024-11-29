@@ -54,6 +54,12 @@ app.get('/callback', async (req, res) => {
                 sameSite: 'Strict',
                 maxAge: 3600 * 1000, // 1 hour
             });
+            res.cookie('is_logged_in', 'true', {
+                httpOnly: false,
+                secure: true,
+                sameSite: 'Strict',
+                maxAge: 3600 * 1000, // 1 hour
+            });
         }
         if(refresh_token) {
             res.cookie('refresh_token', refresh_token, {
@@ -76,6 +82,7 @@ app.get('/logout', async (req, res) => {
     // Clear cookies
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
+    res.clearCookie('is_logged_in'); 
 
     // Redirect to Cognito logout
     const logoutUrl = `${process.env.COGNITO_DOMAIN}/logout?` +
@@ -114,12 +121,19 @@ app.get('/refresh', async (req, res) => {
             sameSite: 'Strict',
             maxAge: 3600 * 1000, // 1 hour
         });
+        res.cookie('is_logged_in', 'true', {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: 3600 * 1000, // 1 hour
+        });
 
         return res.status(200).send('Refreshed');
     } catch (error) {
         // Refresh token is invalid or expired
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
+        res.clearCookie('is_logged_in'); 
         return res.status(400).send('Nothing to refresh');
     }
 });
