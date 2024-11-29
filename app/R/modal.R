@@ -23,7 +23,7 @@ server_modal <- function(id="modal", ide){
                   inputId = ns("sign_in"),
                   label = "Login",
                   style = "width: 50%;",
-                  onClick = "window.parent.location.href='https://scrapeable.auth.us-east-2.amazoncognito.com/login?client_id=4u1auln0l9c8n3f0cjfaq6gpa1&response_type=code&scope=openid&redirect_uri=https%3A%2F%2Fwww.scrapeable.com%2FwebR%2F';",
+                  onClick = "window.parent.location.href='https://reprex-org.auth.us-east-2.amazoncognito.com/login?client_id=4agp589aqu7nu1fdog4pav4gpg&redirect_uri=https://reprex.org/auth/callback&response_type=code&scope=openid';",
                 )
               ),
               shiny::tags$br(),
@@ -33,7 +33,7 @@ server_modal <- function(id="modal", ide){
                   inputId = ns("sign_up"),
                   label = "Sign Up",
                   style = "width: 50%;",
-                  onClick = "window.parent.location.href='https://scrapeable.auth.us-east-2.amazoncognito.com/signup?client_id=4u1auln0l9c8n3f0cjfaq6gpa1&response_type=code&scope=openid&redirect_uri=https%3A%2F%2Fwww.scrapeable.com%2FwebR%2F';",
+                  onClick = "window.parent.location.href='https://reprex-org.auth.us-east-2.amazoncognito.com/signup?client_id=4agp589aqu7nu1fdog4pav4gpg&redirect_uri=https%3A%2F%2Freprex.org%2Fauth%2Fcallback&response_type=code&scope=openid';",
                 )
               )
             ),
