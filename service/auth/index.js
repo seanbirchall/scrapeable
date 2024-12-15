@@ -34,6 +34,7 @@ app.get('/callback', async (req, res) => {
                 client_secret: process.env.COGNITO_CLIENT_SECRET,
                 code,
                 redirect_uri: 'https://reprex.org/auth/callback',
+                scope: 'openid aws.cognito.signin.user.admin',
             }),
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );

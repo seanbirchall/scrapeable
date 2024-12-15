@@ -45,6 +45,13 @@ ui <- bslib::page(
     )
   ),
 
+  # hidden ----
+  shiny::actionButton(
+    inputId = "style",
+    label = NULL,
+    style = "display: none;"
+  ),
+
   # content ----
   bslib::card(
     class = "main-container",
@@ -102,21 +109,33 @@ ui <- bslib::page(
     shiny::tags$script(
       type = "text/javascript", src = "w2ui.js"
     ),
+    # shiny::tags$script(
+    #   type = "text/javascript", src = "active_tab.js"
+    # ),
     shiny::tags$script(
-      type = "text/javascript", src = "active_tab.js"
+      type = "text/javascript", src = "check_auth.js"
     ),
     shiny::tags$script(
-      type = "text/javascript", src = "modalActive.js"
+      type = "text/javascript", src = "handlers.js"
     ),
     shiny::tags$script(
-      type = "text/javascript", src = "authenticate.js"
+      type = "text/javascript", src = "utils.js"
     ),
     shiny::tags$script(
-      type = "text/javascript", src = "copy_by_id.js"
+      type = "text/javascript", src = "events.js"
     ),
-    shiny::tags$script(
-      type = "text/javascript", src = "put_code.js"
-    ),
+    # shiny::tags$script(
+    #   type = "text/javascript", src = "modalActive.js"
+    # ),
+    # shiny::tags$script(
+    #   type = "text/javascript", src = "authenticate.js"
+    # ),
+    # shiny::tags$script(
+    #   type = "text/javascript", src = "copy_by_id.js"
+    # ),
+    # shiny::tags$script(
+    #   type = "text/javascript", src = "put_code.js"
+    # ),
     shiny::tags$script(
       type = "text/javascript", src = "keyboard_shortcuts.js"
     )
@@ -124,8 +143,6 @@ ui <- bslib::page(
 )
 
 server <- function(input, output, session) {
-
-  # shinyjs::hide("pane-control")
 
   # on-load ide ----
   ide <- shiny::reactiveValues(
@@ -177,6 +194,27 @@ server <- function(input, output, session) {
     id = "control",
     ide = ide
   )
+
+  # check auth on-load ----
+  session$sendCustomMessage("check_auth", list())
+
+  # style code ----
+  shiny::observeEvent(input$style, {
+    code <- gsub("\r\n", "\n", input[["editor-ace"]])
+    code <- tryCatch(
+      styler::style_text(text = code),
+      error = function(e){
+        return(code)
+      }
+    )
+    code <- paste(code, collapse = "\n")
+    ide$tabs[[ide$tab_selected]][["code"]] <- code
+    shinyAce::updateAceEditor(
+      session = session,
+      editorId = "editor-ace",
+      value = ide$tabs[[ide$tab_selected]][["code"]]
+    )
+  })
 
   # extension ----
   observeEvent(ide$tab_selected, {
@@ -295,7 +333,7 @@ server <- function(input, output, session) {
             type = "error",
             msg = "Bad Share Link",
             duration = 5,
-            id = "notification_login"
+            id = "notification_link"
           )
         }
       }else{
@@ -303,27 +341,15 @@ server <- function(input, output, session) {
           type = "error",
           msg = "Bad Share Link",
           duration = 5,
-          id = "notification_login"
+          id = "notification_link"
         )
       }
-    }
-
-    ## authentication ----
-    if(!is.null(query[['code']])){
-      body <- paste0(
-        "grant_type=authorization_code&",
-        "client_id=4u1auln0l9c8n3f0cjfaq6gpa1&",
-        "redirect_uri=https://www.scrapeable.com/webR/&",
-        "code=",
-        query[['code']]
-      )
-      session$sendCustomMessage("authenticate", body)
     }
   })
 
   # set token in session user data ----
-  observeEvent(input$idToken, {
-    session$userData$authentication <- input$idToken
+  observeEvent(input$is_logged_in, {
+    session$userData$authentication <- input$is_logged_in
   })
 
   # successful share code ----

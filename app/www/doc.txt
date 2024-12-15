@@ -1,0 +1,28 @@
+
+### Welcome to the REPREX IDE 
+Reprex is a minimal RStudio like IDE that runs serverless in the browser, locally on a desktop, or remotely in the cloud! Reprex is the Cloud IDE for data science, analytics, engineering.... everything data.
+
+Sharing R code, Packages, Apps, APIs, SQL, and even JS is as simple as clicking the share button in the header. You can also quickly deploy your code to the cloud after signing up with a few clicks from the deploy button.
+
+Want to test this out for your own projects or business just clone me @ https://github.com/seanbirchall/reprexIDE
+
+The goal with Reprex is to create an open-source product with comparable features to Posit Connect. While also providing more optimized hosting options to better fit the needs of an individuals first project on a budget, or a businesses high tech debt.
+
+Want to share a Shiny app on the internet?
+  - click the share link
+  - or deploy it as a serverless app on www.reprex.org
+  - for more sophisticated apps maybe you want to deploy it on a container or ec2... just click deploy
+  
+Want to deploy a plumber api that can scale to meet any needs?
+ - deploy it as a serverless lambda function 
+ - don't need 
+ 
+Want to schedule some code?
+
+Want to lock down features for specific users?
+  - just follow along with our OAuth integration 
+  
+Why am I making this?
+
+I scrape data from governments and large mega-corps. I spent a year trying to gain traction with a data business believing R wasn't a viable option to share data with the world.
+Reprex is just a first layer platform to a number of other data products I plan to launch.

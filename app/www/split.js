@@ -1,3 +1,4 @@
+// build split panes
 Split(['#pane-code', '#pane-control'], {
   direction: 'horizontal',
   minSize: 200,
