@@ -1,3 +1,4 @@
+// listen for keyboard shortcuts
 document.addEventListener("keydown", function(event) {
   if(event.ctrlKey && event.key === "i"){
     event.preventDefault();
@@ -14,20 +15,29 @@ document.addEventListener("keydown", function(event) {
       applyButton.click();
     }
   }
-  if (event.ctrlKey && event.shiftKey && (event.key === "S" || event.key === "s")) {
-    event.preventDefault();
-    document.getElementById("style").click();
-  }
   //if(event.ctrlKey && event.key === "s"){
   //  event.preventDefault();
   //  document.getElementById("share").click();
   //}
 });
 
-document.addEventListener('paste', function(event) {
-    setTimeout(() => {
-        document.getElementById("style").click();
-    }, 0);
+// listen for click
+window.addEventListener('click', function(event) {
+  const dropdowns = document.getElementsByClassName('dropdown-content');
+  for (let dropdown of dropdowns) {
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    }
+  }
 });
 
-
+// set active menu
+$(document).ready(function() {
+  var activeTabId = 'control-tab_environment';
+  $('#control-tab_environment, #control-tab_viewer').click(function() {
+    $('#' + activeTabId).removeClass('active-tab');
+    $(this).addClass('active-tab');
+    activeTabId = $(this).attr('id');
+  });
+  $('#control-tab_environment').click();
+});

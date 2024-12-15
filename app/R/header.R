@@ -115,7 +115,7 @@ server_header <- function(id, ide){
 
       # observe share link ----
       shiny::observeEvent(input$share, {
-        if(!is.null(session$userData$authentication)){
+        if(session$userData$authentication){
           ## share notification ----
           show_notification(
             type = "loading",
@@ -152,8 +152,7 @@ server_header <- function(id, ide){
           }
           ## send payload if not null ----
           if(!is.null(payload)){
-            session$sendCustomMessage(
-              type = "put_code",
+            session$sendCustomMessage("put_code",
               message = list(
                 payload = payload,
                 token = session$userData$authentication

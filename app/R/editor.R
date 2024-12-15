@@ -73,7 +73,7 @@ server_editor <- function(id="editor", ide){
       shiny::observeEvent(input$run, {
         shinyjs::addClass("run", class = "disabled")
         run <- eval_code(
-          code = input$ace,
+          code = gsub("\r\n", "\n", input$ace),
           ext = ide$tab_selected_extension
         )
         ide$evals <- run[["evals"]]
@@ -93,7 +93,7 @@ server_editor <- function(id="editor", ide){
       shiny::observeEvent(input$ace_run_code_selected, {
         shinyjs::addClass("run", class = "disabled")
         run <- eval_code(
-          code = input$ace_selection,
+          code = gsub("\r\n", "\n", input$ace_selection),
           ext = ide$tab_selected_extension
         )
         ide$evals <- run[["evals"]]

@@ -1,22 +1,24 @@
-# shiny
+# shiny ----
 library(shiny)
 library(bslib)
 library(shinyAce)
 library(shinyjs)
-# data
+# data ----
 library(jsonlite)
 library(xml2)
 library(dplyr)
 library(tidyr)
-# visual
+library(styler)
+# visual ----
 library(reactable)
 library(htmlwidgets)
-# eval
+# eval ----
 library(pander)
 library(uuid)
-# opts
+# opts ----
 pander::cache.off()
-# functions
+styler::cache_deactivate()
+# functions ----
 scrapeable <- new.env()
 
 with(scrapeable, {
