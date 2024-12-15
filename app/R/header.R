@@ -178,7 +178,25 @@ server_header <- function(id, ide){
 
       # put code response ----
       shiny::observeEvent(input$put_code_response, {
-        print(input$put_code_response)
+        if(response$status == "success"){
+          removeNotification(id = "notification_share")
+          show_notification(
+            type = "success",
+            msg = "Share Link Created",
+            duration = 3,
+            id = "notification_share_success"
+          )
+          # You can handle the successful response data here
+          # response$data will contain what your Lambda returned
+        }else{
+          removeNotification(id = "notification_share")
+          show_notification(
+            type = "error",
+            msg = "Failed to Create Share Link",
+            duration = 3,
+            id = "notification_share_error"
+          )
+        }
       })
     }
   )

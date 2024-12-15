@@ -1,23 +1,34 @@
 // put code to digitial ocean
 Shiny.addCustomMessageHandler("put_code", function(inputId, message) {
-  const payload = message.payload;
-  fetch('https://reprex.org/put/code', {
+  const { payload, token } = message;  // Destructure both payload and token
+  fetch('https://reprex.org/put/code/', {
     method: 'POST',
     credentials: 'include',
-    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)  // payload already contains code and id
   })
   .then(response => {
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     return response.json();
   })
   .then(data => {
-    Shiny.setInputValue(inputId, Date.now());
+    Shiny.setInputValue(inputId, {
+      status: 'success',
+      timestamp: Date.now(),
+      data: data
+    });
   })
   .catch(error => {
     console.error('Error:', error);
-    Shiny.setInputValue(inputId, -Date.now());
+    Shiny.setInputValue(inputId, {
+      status: 'error',
+      timestamp: Date.now(),
+      error: error.message
+    });
   });
 });
 
