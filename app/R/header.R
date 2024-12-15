@@ -120,7 +120,7 @@ server_header <- function(id, ide){
           show_notification(
             type = "loading",
             msg = "Preparing Share Link",
-            duration = 5,
+            duration = 30,
             id = "notification_share"
           )
           ## share tabs ----
@@ -152,7 +152,9 @@ server_header <- function(id, ide){
           }
           ## send payload if not null ----
           if(!is.null(payload)){
-            session$sendCustomMessage("put_code",
+            session$sendCustomMessage(
+              "put_code",
+              inputId = ns("put_code_response"),
               message = list(
                 payload = payload,
                 token = session$userData$authentication
@@ -172,6 +174,11 @@ server_header <- function(id, ide){
             id = "notification_login"
           )
         }
+      })
+
+      # put code response ----
+      shiny::observeEvent(input$put_code_response, {
+        print(input$put_code_response)
       })
     }
   )
